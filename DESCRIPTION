@@ -1,8 +1,8 @@
 Package: coxmeg
 Type: Package
 Title: Cox Mixed-Effects Model for Genome-Wide Association Studies
-Version: 1.0.7
-Date: 2019-09-05
+Version: 1.0.8
+Date: 2019-10-12
 Author: Liang He
 Maintainer: Liang He <liang.he@duke.edu>
 Description: Fast algorithms for fitting a Cox mixed-effects model for e.g., genome-wide association studies. See Liang He and Alexander Kulminski (2019) <doi:10.1101/729285>.
@@ -16,8 +16,8 @@ Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 Repository: CRAN
 Repository/R-Forge/Project: coxmeg
-Repository/R-Forge/Revision: 12
-Repository/R-Forge/DateTimeStamp: 2019-09-10 04:27:27
-Date/Publication: 2019-09-16 10:00:02 UTC
+Repository/R-Forge/Revision: 14
+Repository/R-Forge/DateTimeStamp: 2019-10-13 17:41:04
+Date/Publication: 2019-10-14 14:40:03 UTC
 NeedsCompilation: yes
-Packaged: 2019-09-10 04:57:10 UTC; rforge
+Packaged: 2019-10-13 17:57:20 UTC; rforge

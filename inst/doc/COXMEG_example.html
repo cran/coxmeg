@@ -13,7 +13,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2019-09-10" />
+<meta name="date" content="2019-10-13" />
 
 <title>Cox Mixed-Effects Model for Genome-Wide Association Studies</title>
 
@@ -304,7 +304,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Cox Mixed-Effects Model for Genome-Wide Association Studies</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2019-09-10</h4>
+<h4 class="date">2019-10-13</h4>
 
 
 
@@ -358,13 +358,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <a class="sourceLine" id="cb5-8" title="8">ycen &lt;-<span class="st"> </span><span class="kw">pmin</span>(y, cen)</a>
 <a class="sourceLine" id="cb5-9" title="9">outcome &lt;-<span class="st"> </span><span class="kw">cbind</span>(ycen,<span class="kw">as.numeric</span>(y <span class="op">&lt;=</span><span class="st"> </span>cen))</a>
 <a class="sourceLine" id="cb5-10" title="10"><span class="kw">head</span>(outcome)</a></code></pre></div>
-<pre><code>##            ycen  
-## [1,] 10.3919174 1
-## [2,]  2.0724135 1
-## [3,]  2.3335449 1
-## [4,]  0.6183988 1
-## [5,]  1.3229176 1
-## [6,]  2.1235979 1</code></pre>
+<pre><code>##           ycen  
+## [1,] 1.5069277 1
+## [2,] 0.3678216 1
+## [3,] 2.9411302 1
+## [4,] 6.6829547 1
+## [5,] 2.7700652 1
+## [6,] 8.9899621 1</code></pre>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">sigma[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</a></code></pre></div>
 <pre><code>## 5 x 5 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                         
@@ -373,32 +373,32 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [3,] 0.5 0.5 1.0 0.5 0.5
 ## [4,] 0.5 0.5 0.5 1.0 0.5
 ## [5,] 0.5 0.5 0.5 0.5 1.0</code></pre>
-<p>We fit a Cox mixed-effects model using the <code>coxmeg</code> function. We set <code>dense=FALSE</code> to indicate that the relatedness matrix is sparse. However, the function will automatically treat it as dense if there are more than 50% non-zero elements in the matrix. We set <code>order=1</code> to use the first-order approximation of the inverse Hessian matrix in the optimization.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,pred,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<p>We fit a Cox mixed-effects model using the <code>coxmeg</code> function. We set <code>type='bd'</code> to indicate that the relatedness matrix is a block-diagonal matrix. However, the function will automatically treat it as dense if there are more than 50% non-zero elements in the matrix. Note that <code>type='bd'</code> should be used only for a block-diagonal matrix or a sparse matrix of which its inverse matrix is also sparse. For a general sparse relatedness matrix of which its inverse is not sparse, <code>type='sparse'</code> should be used. When <code>type='sparse'</code> is specified, the relatedness matrix will not be inverted during the estimation procedure.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">X=</span>pred,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">'diagonal'</span>)</a></code></pre></div>
 <pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
 <pre><code>## There is/are 1 predictors. The sample size included is 1000.</code></pre>
 <pre><code>## The relatedness matrix is treated as sparse.</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">re</a></code></pre></div>
+<pre><code>## The relatedness matrix is inverted.</code></pre>
+<pre><code>## The method for computing the determinant is 'diagonal'.</code></pre>
+<pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">re</a></code></pre></div>
 <pre><code>## $beta
-##           [,1]
-## [1,] 0.1725636
+## [1] 0.1058178
 ## 
 ## $HR
-##          [,1]
-## [1,] 1.188347
+## [1] 1.111619
 ## 
 ## $sd_beta
-## [1] 0.03799398
+## [1] 0.03367205
 ## 
 ## $p
-##              [,1]
-## [1,] 5.575808e-06
+## [1] 0.001674547
 ## 
 ## $tau
-## [1] 0.2989253
+## [1] 0.100811
 ## 
 ## $iter
-## [1] 18
+## [1] 19
 ## 
 ## $rank
 ## [1] 1000
@@ -407,11 +407,12 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] 1000
 ## 
 ## $int_ll
-## [1] 11573.21</code></pre>
+## [1] 11555.69</code></pre>
 <p>In the above result, <code>tau</code> is the estimated variance component, and <code>int_ll</code> is -2*log(lik) of the integrated/marginal likelihood of tau.</p>
-<p>It should be noted that when the relatedness matrix is symmetric positive definite (SPD), <code>coxmeg</code> will make use of the sparsity by setting <code>dense=FALSE</code> regardless of whether the relatedness matrix or its inverse is sparse. However, when the relatedness matrix is symmetric positive semidefinite (SPSD), <code>coxmeg</code> can make use of the sparsity only when its inverse is sparse. When the relatedness matrix is SPSD and its inverse is dense, setting <code>dense=FALSE</code> will result in worse performance. In such a case, it would be better to use <code>dense=TRUE</code> or to convert the relatedness matrix to SPD or block-diagonal if possible.</p>
+<p>We give more details about specifying <code>order</code> and <code>detap</code>. We set <code>order=1</code> (also by default) to use the first-order approximation of the inverse Hessian matrix in the optimization. By <code>detap='diagonal'</code>, we tell <code>coxmeg</code> to use a diagonal approximation to compute the determinant, which is much faster under this setting, when estimating the variance component. By default (<code>detap='NULL'</code>), <code>coxmeg</code> will automatically select a method for computing the determinant based on <code>type</code>, the sample size, and whether the relatedness matrix is symmetric positive definite (SPD).</p>
+<p>It should be noted that when the relatedness matrix is SPD, <code>coxmeg</code> will make use of the sparsity by setting <code>type='sparse'</code> or <code>type='bd'</code> regardless of whether the relatedness matrix or its inverse is sparse. However, when the relatedness matrix is symmetric positive semidefinite (SPSD), <code>coxmeg</code> can make use of the sparsity only when its inverse is sparse. When the relatedness matrix is SPSD and its inverse is dense, setting <code>type='sparse'</code> may result in worse performance. In such a case, it would be better to use <code>type='dense'</code> or to convert the relatedness matrix to SPD or block-diagonal if possible.</p>
 <p>We compare the results with coxme, which are slightly different due to different approximation of the log-determinant used in the estimation of the variance component. Also, the integrated log-likelihoods cannot be compared directly because different approximation of log-determinant is used.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="kw">library</span>(coxme)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">library</span>(coxme)</a></code></pre></div>
 <pre><code>## Loading required package: survival</code></pre>
 <pre><code>## Loading required package: bdsmatrix</code></pre>
 <pre><code>## 
@@ -419,100 +420,100 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <pre><code>## The following object is masked from 'package:base':
 ## 
 ##     backsolve</code></pre>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">bls &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb20-2" title="2"><span class="cf">for</span>(i <span class="cf">in</span> (size[<span class="dv">1</span>]<span class="op">-</span><span class="dv">1</span>)<span class="op">:</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb20-3" title="3">{bls &lt;-<span class="st"> </span><span class="kw">c</span>(bls, <span class="kw">c</span>(<span class="kw">rep</span>(offd,i),<span class="dv">1</span>))}</a>
-<a class="sourceLine" id="cb20-4" title="4">tmat &lt;-<span class="st"> </span><span class="kw">bdsmatrix</span>(<span class="dt">blocksize=</span>size, <span class="dt">blocks=</span><span class="kw">rep</span>(bls,n_f),<span class="dt">dimnames=</span><span class="kw">list</span>(<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n),<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)))</a>
-<a class="sourceLine" id="cb20-5" title="5">re_coxme =<span class="st"> </span><span class="kw">coxme</span>(<span class="kw">Surv</span>(outcome[,<span class="dv">1</span>],outcome[,<span class="dv">2</span>])<span class="op">~</span><span class="kw">as.matrix</span>(pred)<span class="op">+</span>(<span class="dv">1</span><span class="op">|</span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)), <span class="dt">varlist=</span><span class="kw">list</span>(tmat),<span class="dt">ties=</span><span class="st">'breslow'</span>)</a>
-<a class="sourceLine" id="cb20-6" title="6">re_coxme</a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">bls &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb23-2" title="2"><span class="cf">for</span>(i <span class="cf">in</span> (size[<span class="dv">1</span>]<span class="op">-</span><span class="dv">1</span>)<span class="op">:</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb23-3" title="3">{bls &lt;-<span class="st"> </span><span class="kw">c</span>(bls, <span class="kw">c</span>(<span class="kw">rep</span>(offd,i),<span class="dv">1</span>))}</a>
+<a class="sourceLine" id="cb23-4" title="4">tmat &lt;-<span class="st"> </span><span class="kw">bdsmatrix</span>(<span class="dt">blocksize=</span>size, <span class="dt">blocks=</span><span class="kw">rep</span>(bls,n_f),<span class="dt">dimnames=</span><span class="kw">list</span>(<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n),<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)))</a>
+<a class="sourceLine" id="cb23-5" title="5">re_coxme =<span class="st"> </span><span class="kw">coxme</span>(<span class="kw">Surv</span>(outcome[,<span class="dv">1</span>],outcome[,<span class="dv">2</span>])<span class="op">~</span><span class="kw">as.matrix</span>(pred)<span class="op">+</span>(<span class="dv">1</span><span class="op">|</span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)), <span class="dt">varlist=</span><span class="kw">list</span>(tmat),<span class="dt">ties=</span><span class="st">'breslow'</span>)</a>
+<a class="sourceLine" id="cb23-6" title="6">re_coxme</a></code></pre></div>
 <pre><code>## Cox mixed-effects model fit by maximum likelihood
 ## 
-##   events, n = 953, 1000
-##   Iterations= 7 35 
-##                     NULL Integrated  Fitted
-## Log-likelihood -5637.324  -5619.088 -5421.2
+##   events, n = 948, 1000
+##   Iterations= 7 33 
+##                     NULL Integrated    Fitted
+## Log-likelihood -5617.018  -5610.384 -5528.274
 ## 
-##                    Chisq     df          p   AIC     BIC
-## Integrated loglik  36.47   2.00 1.2024e-08 32.47   22.75
-##  Penalized loglik 432.25 176.15 0.0000e+00 79.94 -776.11
+##                    Chisq    df          p   AIC     BIC
+## Integrated loglik  13.27  2.00 1.3144e-03  9.27   -0.44
+##  Penalized loglik 177.49 78.56 1.2853e-09 20.38 -360.96
 ## 
 ## Model:  Surv(outcome[, 1], outcome[, 2]) ~ as.matrix(pred) + (1 | as.character(1:n)) 
 ## Fixed coefficients
-##                      coef exp(coef)   se(coef)    z       p
-## as.matrix(pred) 0.1727242  1.188538 0.03804476 4.54 5.6e-06
+##                      coef exp(coef)   se(coef)    z      p
+## as.matrix(pred) 0.1059306  1.111745 0.03371519 3.14 0.0017
 ## 
 ## Random effects
 ##  Group             Variable Std Dev   Variance 
-##  as.character.1.n. Vmat.1   0.5487300 0.3011047</code></pre>
+##  as.character.1.n. Vmat.1   0.3208776 0.1029624</code></pre>
 </div>
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-sparse-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a sparse relatedness matrix</h2>
 <p>We illustrate how to perform a GWAS using the <code>coxmeg_plink</code> function. This function supports plink bed files. We provide example files in the package. The example plink files include 20 SNPs and 3000 subjects from 600 families. The following code performs a GWAS for all SNPs in the example bed files. The <code>coxmeg_plink</code> function will write a temporary .gds file for the SNPs in the folder specified by <code>tmp_dir</code>. The user needs to specify a <code>tmp_dir</code> to store the temporary file when <code>bed</code> is provided. The temporary file is removed after the analysis is done.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">library</span>(coxmeg)</a>
-<a class="sourceLine" id="cb22-2" title="2">bed =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;example_null.bed&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
-<a class="sourceLine" id="cb22-3" title="3">bed =<span class="st"> </span><span class="kw">substr</span>(bed,<span class="dv">1</span>,<span class="kw">nchar</span>(bed)<span class="op">-</span><span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb22-4" title="4">pheno =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_pheno.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
-<a class="sourceLine" id="cb22-5" title="5">cov =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_cov.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
-<a class="sourceLine" id="cb22-6" title="6"></a>
-<a class="sourceLine" id="cb22-7" title="7"><span class="co">## building a relatedness matrix</span></a>
-<a class="sourceLine" id="cb22-8" title="8">n_f &lt;-<span class="st"> </span><span class="dv">600</span></a>
-<a class="sourceLine" id="cb22-9" title="9">mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</a>
-<a class="sourceLine" id="cb22-10" title="10">size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</a>
-<a class="sourceLine" id="cb22-11" title="11">offd &lt;-<span class="st"> </span><span class="fl">0.5</span></a>
-<a class="sourceLine" id="cb22-12" title="12"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</a>
-<a class="sourceLine" id="cb22-13" title="13">{</a>
-<a class="sourceLine" id="cb22-14" title="14">  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</a>
-<a class="sourceLine" id="cb22-15" title="15">  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb22-16" title="16">}</a>
-<a class="sourceLine" id="cb22-17" title="17">sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</a>
-<a class="sourceLine" id="cb22-18" title="18"></a>
-<a class="sourceLine" id="cb22-19" title="19">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">library</span>(coxmeg)</a>
+<a class="sourceLine" id="cb25-2" title="2">bed =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;example_null.bed&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb25-3" title="3">bed =<span class="st"> </span><span class="kw">substr</span>(bed,<span class="dv">1</span>,<span class="kw">nchar</span>(bed)<span class="op">-</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb25-4" title="4">pheno =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_pheno.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb25-5" title="5">cov =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_cov.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb25-6" title="6"></a>
+<a class="sourceLine" id="cb25-7" title="7"><span class="co">## building a relatedness matrix</span></a>
+<a class="sourceLine" id="cb25-8" title="8">n_f &lt;-<span class="st"> </span><span class="dv">600</span></a>
+<a class="sourceLine" id="cb25-9" title="9">mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</a>
+<a class="sourceLine" id="cb25-10" title="10">size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</a>
+<a class="sourceLine" id="cb25-11" title="11">offd &lt;-<span class="st"> </span><span class="fl">0.5</span></a>
+<a class="sourceLine" id="cb25-12" title="12"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</a>
+<a class="sourceLine" id="cb25-13" title="13">{</a>
+<a class="sourceLine" id="cb25-14" title="14">  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</a>
+<a class="sourceLine" id="cb25-15" title="15">  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb25-16" title="16">}</a>
+<a class="sourceLine" id="cb25-17" title="17">sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</a>
+<a class="sourceLine" id="cb25-18" title="18"></a>
+<a class="sourceLine" id="cb25-19" title="19">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## Excluding 0 SNP on non-autosomes
 ## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">re</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
-##     snp.id chromosome position allele      afreq   index         beta
-## 1   null_0          1        1    d/D 0.30983333  null_0  0.015672101
-## 2   null_1          1        2    d/D 0.23466667  null_1  0.019439150
-## 3   null_2          1        3    D/d 0.14033333  null_2 -0.049845757
-## 4   null_3          1        4    D/d 0.16183333  null_3  0.044130767
-## 5   null_4          1        5    d/D 0.19933333  null_4  0.028473176
-## 6   null_5          1        6    D/d 0.11800000  null_5 -0.114319159
-## 7   null_6          1        7    d/D 0.09483333  null_6 -0.017981231
-## 8   null_7          1        8    D/d 0.49683333  null_7 -0.004207897
-## 9   null_8          1        9    d/D 0.31366667  null_8 -0.063741849
-## 10  null_9          1       10    D/d 0.49183333  null_9 -0.008409562
-## 11 null_10          1       11    d/D 0.34833333 null_10 -0.013581479
-## 12 null_11          1       12    D/d 0.25100000 null_11  0.037508301
-## 13 null_12          1       13    d/D 0.17500000 null_12 -0.017215848
-## 14 null_13          1       14    D/d 0.06333333 null_13 -0.068207724
-## 15 null_14          1       15    D/d 0.20833333 null_14 -0.013965386
-## 16 null_15          1       16    d/D 0.17050000 null_15  0.002172773
-## 17 null_16          1       17    D/d 0.33550000 null_16  0.004762350
-## 18 null_17          1       18    d/D 0.26633333 null_17  0.001786995
-## 19 null_18          1       19    D/d 0.09433333 null_18 -0.016052310
-## 20 null_19          1       20    d/D 0.11650000 null_19 -0.022398126
-##           HR    sd_beta           p
-## 1  1.0157956 0.02938524 0.593803537
-## 2  1.0196293 0.03222054 0.546298835
-## 3  0.9513762 0.03860368 0.196628160
-## 4  1.0451190 0.03701019 0.233106387
-## 5  1.0288824 0.03432500 0.406811816
-## 6  0.8919732 0.04234095 0.006934636
-## 7  0.9821795 0.04655562 0.699325464
-## 8  0.9958009 0.02717805 0.876957699
-## 9  0.9382472 0.02958441 0.031195036
-## 10 0.9916257 0.02730686 0.758108827
-## 11 0.9865103 0.02859980 0.634872392
-## 12 1.0382206 0.03113254 0.228282858
-## 13 0.9829315 0.03628637 0.635183349
-## 14 0.9340664 0.05698849 0.231357835
-## 15 0.9861317 0.03431600 0.684034201
-## 16 1.0021751 0.03685682 0.952990554
-## 17 1.0047737 0.02859957 0.867749134
-## 18 1.0017886 0.03098518 0.954009439
-## 19 0.9840758 0.04731969 0.734435643
-## 20 0.9778508 0.04231689 0.596600710
+##     snp.id chromosome position allele      afreq  afreq_inc   index
+## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0
+## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1
+## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2
+## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3
+## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4
+## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5
+## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6
+## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7
+## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8
+## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9
+## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10
+## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11
+## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12
+## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13
+## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14
+## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15
+## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16
+## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17
+## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18
+## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19
+##            beta        HR    sd_beta           p
+## 1   0.015672101 1.0157956 0.02938524 0.593803537
+## 2   0.019439150 1.0196293 0.03222054 0.546298835
+## 3  -0.049845757 0.9513762 0.03860368 0.196628160
+## 4   0.044130767 1.0451190 0.03701019 0.233106387
+## 5   0.028473176 1.0288824 0.03432500 0.406811816
+## 6  -0.114319159 0.8919732 0.04234095 0.006934636
+## 7  -0.017981231 0.9821795 0.04655562 0.699325464
+## 8  -0.004207897 0.9958009 0.02717805 0.876957699
+## 9  -0.063741849 0.9382472 0.02958441 0.031195036
+## 10 -0.008409562 0.9916257 0.02730686 0.758108827
+## 11 -0.013581479 0.9865103 0.02859980 0.634872392
+## 12  0.037508301 1.0382206 0.03113254 0.228282858
+## 13 -0.017215848 0.9829315 0.03628637 0.635183349
+## 14 -0.068207724 0.9340664 0.05698849 0.231357835
+## 15 -0.013965386 0.9861317 0.03431600 0.684034201
+## 16  0.002172773 1.0021751 0.03685682 0.952990554
+## 17  0.004762350 1.0047737 0.02859957 0.867749134
+## 18  0.001786995 1.0017886 0.03098518 0.954009439
+## 19 -0.016052310 0.9840758 0.04731969 0.734435643
+## 20 -0.022398126 0.9778508 0.04231689 0.596600710
 ## 
 ## $tau
 ## [1] 0.04028041
@@ -524,92 +525,25 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] 3000</code></pre>
 <p>The above code first retrieves the full path of the files. If the full path is not given, <code>coxmeg_plink</code> will search the current working directory. The file name of the bed file should not include the suffix (.bed). The phenotype and covariate files have the same format as used in plink, and the IDs must be consistent with the bed files. Specifically, the phenotype file should include four columns including family ID, individual ID, time, and status. The covariate file always starts with two columns, family ID and individual ID. Missing values in the phenotype and covariate files are denoted by -9 and NA, respectively. In the current version, the <code>coxmeg_plink</code> function does not impute genotypes itself, and only SNPs without missing values will be analyzed, so it will be better to use imputed genotype data.</p>
 <p>The <code>coxmeg_plink</code> function fist estimates the variance component with only the covariates, and then uses it to analyze each SNP after filtering. These two steps can be done separately as follows. The first command without <code>bed</code> only esitmates the variance component tau, and the second command uses the estimated tau to analyze the SNPs.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb26-2" title="2">re</a></code></pre></div>
-<pre><code>## $tau
-## [1] 0.04028041
-## 
-## $iter
-## [1] 15
-## 
-## $rank
-## [1] 3000
-## 
-## $nsam
-## [1] 3000</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
-<pre><code>## Excluding 0 SNP on non-autosomes
-## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">re</a></code></pre></div>
-<pre><code>## $summary
-##     snp.id chromosome position allele      afreq   index         beta
-## 1   null_0          1        1    d/D 0.30983333  null_0  0.015672101
-## 2   null_1          1        2    d/D 0.23466667  null_1  0.019439150
-## 3   null_2          1        3    D/d 0.14033333  null_2 -0.049845757
-## 4   null_3          1        4    D/d 0.16183333  null_3  0.044130767
-## 5   null_4          1        5    d/D 0.19933333  null_4  0.028473176
-## 6   null_5          1        6    D/d 0.11800000  null_5 -0.114319159
-## 7   null_6          1        7    d/D 0.09483333  null_6 -0.017981231
-## 8   null_7          1        8    D/d 0.49683333  null_7 -0.004207897
-## 9   null_8          1        9    d/D 0.31366667  null_8 -0.063741849
-## 10  null_9          1       10    D/d 0.49183333  null_9 -0.008409562
-## 11 null_10          1       11    d/D 0.34833333 null_10 -0.013581479
-## 12 null_11          1       12    D/d 0.25100000 null_11  0.037508301
-## 13 null_12          1       13    d/D 0.17500000 null_12 -0.017215848
-## 14 null_13          1       14    D/d 0.06333333 null_13 -0.068207724
-## 15 null_14          1       15    D/d 0.20833333 null_14 -0.013965386
-## 16 null_15          1       16    d/D 0.17050000 null_15  0.002172773
-## 17 null_16          1       17    D/d 0.33550000 null_16  0.004762350
-## 18 null_17          1       18    d/D 0.26633333 null_17  0.001786995
-## 19 null_18          1       19    D/d 0.09433333 null_18 -0.016052310
-## 20 null_19          1       20    d/D 0.11650000 null_19 -0.022398126
-##           HR    sd_beta           p
-## 1  1.0157956 0.02938524 0.593803537
-## 2  1.0196293 0.03222054 0.546298835
-## 3  0.9513762 0.03860368 0.196628160
-## 4  1.0451190 0.03701019 0.233106387
-## 5  1.0288824 0.03432500 0.406811816
-## 6  0.8919732 0.04234095 0.006934636
-## 7  0.9821795 0.04655562 0.699325464
-## 8  0.9958009 0.02717805 0.876957699
-## 9  0.9382472 0.02958441 0.031195036
-## 10 0.9916257 0.02730686 0.758108827
-## 11 0.9865103 0.02859980 0.634872392
-## 12 1.0382206 0.03113254 0.228282858
-## 13 0.9829315 0.03628637 0.635183349
-## 14 0.9340664 0.05698849 0.231357835
-## 15 0.9861317 0.03431600 0.684034201
-## 16 1.0021751 0.03685682 0.952990554
-## 17 1.0047737 0.02859957 0.867749134
-## 18 1.0017886 0.03098518 0.954009439
-## 19 0.9840758 0.04731969 0.734435643
-## 20 0.9778508 0.04231689 0.596600710
-## 
-## $tau
-## [1] 0.04028041
-## 
-## $rank
-## [1] 3000
-## 
-## $nsam
-## [1] 3000</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb29-2" title="2">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <p>When the genotypes of a group of SNPs are stored in a matrix, the function <code>coxmeg_m</code> can be used to perform GWAS for each of the SNPs. Similarly, <code>coxmeg_m</code> first estimates the variance component without the SNPs. In the following example, we simulate 10 independent SNPs, and use <code>coxmeg_m</code> to perform association analysis.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">geno =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rbinom</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="dv">2</span>,<span class="kw">runif</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="fl">0.05</span>,<span class="fl">0.5</span>)),<span class="kw">nrow</span>(sigma),<span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb32-2" title="2">pheno_m =<span class="st"> </span><span class="kw">read.table</span>(pheno)</a>
-<a class="sourceLine" id="cb32-3" title="3">re =<span class="st"> </span><span class="kw">coxmeg_m</span>(geno,pheno_m[,<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>],sigma,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb32-4" title="4">re</a></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">geno =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rbinom</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="dv">2</span>,<span class="kw">runif</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="fl">0.05</span>,<span class="fl">0.5</span>)),<span class="kw">nrow</span>(sigma),<span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb30-2" title="2">pheno_m =<span class="st"> </span><span class="kw">read.table</span>(pheno)</a>
+<a class="sourceLine" id="cb30-3" title="3">re =<span class="st"> </span><span class="kw">coxmeg_m</span>(geno,pheno_m[,<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>],sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb30-4" title="4">re</a></code></pre></div>
 <pre><code>## $summary
-##            beta        HR    sd_beta          p
-## 1   0.021467532 1.0216996 0.02956773 0.46781054
-## 2  -0.004205801 0.9958030 0.03011438 0.88892795
-## 3  -0.013959685 0.9861373 0.02996833 0.64134818
-## 4  -0.025261625 0.9750548 0.02902697 0.38414671
-## 5   0.065897194 1.0681169 0.02940553 0.02502739
-## 6   0.007653429 1.0076828 0.03003647 0.79887407
-## 7  -0.038480171 0.9622508 0.02961391 0.19380838
-## 8  -0.009497958 0.9905470 0.02980277 0.74995871
-## 9   0.037853723 1.0385793 0.02933529 0.19691816
-## 10 -0.042613350 0.9582818 0.02999035 0.15534527
+##             beta        HR    sd_beta         p
+## 1   0.0002384696 1.0002385 0.03035753 0.9937324
+## 2  -0.0405921971 0.9602206 0.02955264 0.1695797
+## 3   0.0365327382 1.0372083 0.03029572 0.2278672
+## 4   0.0135690073 1.0136615 0.02938004 0.6441929
+## 5   0.0392573688 1.0400381 0.02923483 0.1793274
+## 6  -0.0015336712 0.9984675 0.02940029 0.9583971
+## 7  -0.0116558350 0.9884118 0.02971517 0.6948720
+## 8   0.0260419260 1.0263840 0.02919936 0.3724645
+## 9   0.0256324700 1.0259638 0.02965261 0.3873542
+## 10  0.0263546872 1.0267050 0.02939639 0.3699709
 ## 
 ## $tau
 ## [1] 0.04052206
@@ -622,130 +556,131 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-dense-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a dense relatedness matrix</h2>
-<p>When the relatedness matrix is dense and large (&gt;5000), it will be more efficient to specify <code>dense=TRUE</code>, and use preconditioned conjugate gradiant <code>solver=2</code> and stochastic lanczos quadrature <code>detap=TRUE</code> in the optimization. These can be specified as follows.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">TRUE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>)</a></code></pre></div>
+<p>When the relatedness matrix is dense and large (&gt;5000), <code>type='dense'</code> should be used. In thise case, it will be more efficient to use preconditioned conjugate gradiant (PCG) (e.g., by explicitly specifying <code>solver=2</code>) and stochastic lanczos quadrature (SLQ) <code>detap='slq'</code> in the optimization. These can be specified as follows.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'dense'</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">'slq'</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>)</a></code></pre></div>
 <pre><code>## Excluding 0 SNP on non-autosomes
 ## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1">re</a></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
-##     snp.id chromosome position allele      afreq   index         beta
-## 1   null_0          1        1    d/D 0.30983333  null_0  0.015404190
-## 2   null_1          1        2    d/D 0.23466667  null_1  0.019314010
-## 3   null_2          1        3    D/d 0.14033333  null_2 -0.049315969
-## 4   null_3          1        4    D/d 0.16183333  null_3  0.044002515
-## 5   null_4          1        5    d/D 0.19933333  null_4  0.028347057
-## 6   null_5          1        6    D/d 0.11800000  null_5 -0.113929813
-## 7   null_6          1        7    d/D 0.09483333  null_6 -0.018283745
-## 8   null_7          1        8    D/d 0.49683333  null_7 -0.004175230
-## 9   null_8          1        9    d/D 0.31366667  null_8 -0.063689854
-## 10  null_9          1       10    D/d 0.49183333  null_9 -0.008400074
-## 11 null_10          1       11    d/D 0.34833333 null_10 -0.013541845
-## 12 null_11          1       12    D/d 0.25100000 null_11  0.037145202
-## 13 null_12          1       13    d/D 0.17500000 null_12 -0.017170157
-## 14 null_13          1       14    D/d 0.06333333 null_13 -0.068107205
-## 15 null_14          1       15    D/d 0.20833333 null_14 -0.014179297
-## 16 null_15          1       16    d/D 0.17050000 null_15  0.002301227
-## 17 null_16          1       17    D/d 0.33550000 null_16  0.004810214
-## 18 null_17          1       18    d/D 0.26633333 null_17  0.001500359
-## 19 null_18          1       19    D/d 0.09433333 null_18 -0.016065045
-## 20 null_19          1       20    d/D 0.11650000 null_19 -0.022188725
-##           HR    sd_beta           p
-## 1  1.0155234 0.02929760 0.599038719
-## 2  1.0195017 0.03211922 0.547625222
-## 3  0.9518803 0.03847821 0.199962083
-## 4  1.0449850 0.03689630 0.233026252
-## 5  1.0287527 0.03422378 0.407508865
-## 6  0.8923206 0.04223117 0.006980651
-## 7  0.9818824 0.04643159 0.693744838
-## 8  0.9958335 0.02711199 0.877610197
-## 9  0.9382960 0.02947246 0.030695669
-## 10 0.9916351 0.02723227 0.757732112
-## 11 0.9865494 0.02850902 0.634785424
-## 12 1.0378437 0.03103654 0.231376041
-## 13 0.9829764 0.03617303 0.635024121
-## 14 0.9341603 0.05681236 0.230601970
-## 15 0.9859208 0.03420779 0.678504352
-## 16 1.0023039 0.03674958 0.950069799
-## 17 1.0048218 0.02852559 0.866089239
-## 18 1.0015015 0.03090305 0.961277504
-## 19 0.9840633 0.04715458 0.733337748
-## 20 0.9780556 0.04220244 0.599048887
+##     snp.id chromosome position allele      afreq  afreq_inc   index
+## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0
+## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1
+## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2
+## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3
+## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4
+## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5
+## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6
+## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7
+## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8
+## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9
+## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10
+## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11
+## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12
+## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13
+## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14
+## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15
+## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16
+## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17
+## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18
+## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19
+##            beta        HR    sd_beta           p
+## 1   0.015842179 1.0159683 0.02944213 0.590522764
+## 2   0.019519093 1.0197108 0.03228494 0.545452639
+## 3  -0.050185770 0.9510527 0.03867491 0.194414040
+## 4   0.044212236 1.0452042 0.03708496 0.233187583
+## 5   0.028553468 1.0289650 0.03439369 0.406428553
+## 6  -0.114564702 0.8917542 0.04242776 0.006929164
+## 7  -0.017789937 0.9823674 0.04664135 0.702891754
+## 8  -0.004229770 0.9957792 0.02723254 0.876568702
+## 9  -0.063774106 0.9382169 0.02964254 0.031441569
+## 10 -0.008416349 0.9916190 0.02735700 0.758349591
+## 11 -0.013606453 0.9864857 0.02865667 0.634922859
+## 12  0.037738473 1.0384596 0.03119307 0.226342227
+## 13 -0.017246414 0.9829015 0.03635939 0.635263336
+## 14 -0.068268098 0.9340100 0.05709717 0.231834070
+## 15 -0.013827875 0.9862673 0.03438486 0.687573581
+## 16  0.002090878 1.0020931 0.03692780 0.954847349
+## 17  0.004732321 1.0047435 0.02865690 0.868835993
+## 18  0.001970310 1.0019723 0.03104237 0.949390949
+## 19 -0.016045990 0.9840821 0.04741022 0.735024071
+## 20 -0.022533157 0.9777188 0.04239847 0.595098977
 ## 
 ## $tau
-## [1] 0.03614275
+## [1] 0.0429545
 ## 
 ## $rank
 ## [1] 3000
 ## 
 ## $nsam
 ## [1] 3000</code></pre>
+<p>If <code>solver</code> is not specified, <code>coxmeg_plink</code> will by default choose PCG as a solver when <code>type='dense'</code>. If <code>detap</code> is not specified, <code>coxmeg_plink</code> will by default use <code>detap='slq'</code> for a dense matrix when the sample size exceeds 3000. The number of Monte Carlo samples in the SLQ can be specified by <code>mc</code> (by default <code>mc=100</code>).</p>
 <p>The above command estimates HRs and reports p-values. Instead, a score test, which is computationally much more efficient, can be used by specifying <code>score=TRUE</code>.</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">TRUE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>,<span class="dt">score=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'dense'</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">'slq'</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>,<span class="dt">score=</span><span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code>## Excluding 0 SNP on non-autosomes
 ## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">re</a></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
-##     snp.id chromosome position allele      afreq   index  score_test
-## 1   null_0          1        1    d/D 0.30983333  null_0 0.276484586
-## 2   null_1          1        2    d/D 0.23466667  null_1 0.361595590
-## 3   null_2          1        3    D/d 0.14033333  null_2 1.641833015
-## 4   null_3          1        4    D/d 0.16183333  null_3 1.422774170
-## 5   null_4          1        5    d/D 0.19933333  null_4 0.686367612
-## 6   null_5          1        6    D/d 0.11800000  null_5 7.296248610
-## 7   null_6          1        7    d/D 0.09483333  null_6 0.155135978
-## 8   null_7          1        8    D/d 0.49683333  null_7 0.023749750
-## 9   null_8          1        9    d/D 0.31366667  null_8 4.664929704
-## 10  null_9          1       10    D/d 0.49183333  null_9 0.095176585
-## 11 null_10          1       11    d/D 0.34833333 null_10 0.225605581
-## 12 null_11          1       12    D/d 0.25100000 null_11 1.432454321
-## 13 null_12          1       13    d/D 0.17500000 null_12 0.225330766
-## 14 null_13          1       14    D/d 0.06333333 null_13 1.437458476
-## 15 null_14          1       15    D/d 0.20833333 null_14 0.171816004
-## 16 null_15          1       16    d/D 0.17050000 null_15 0.003922069
-## 17 null_16          1       17    D/d 0.33550000 null_16 0.028467336
-## 18 null_17          1       18    d/D 0.26633333 null_17 0.002358340
-## 19 null_18          1       19    D/d 0.09433333 null_18 0.115959311
-## 20 null_19          1       20    d/D 0.11650000 null_19 0.276623990
-##              p
-## 1  0.599014656
-## 2  0.547621418
-## 3  0.200074157
-## 4  0.232947327
-## 5  0.407402645
-## 6  0.006909873
-## 7  0.693674770
-## 8  0.877523367
-## 9  0.030784684
-## 10 0.757696555
-## 11 0.634801543
-## 12 0.231364309
-## 13 0.635007819
-## 14 0.230551057
-## 15 0.678502885
-## 16 0.950063988
-## 17 0.866014793
-## 18 0.961267763
-## 19 0.733458949
-## 20 0.598922560
+##     snp.id chromosome position allele      afreq  afreq_inc   index
+## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0
+## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1
+## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2
+## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3
+## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4
+## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5
+## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6
+## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7
+## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8
+## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9
+## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10
+## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11
+## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12
+## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13
+## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14
+## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15
+## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16
+## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17
+## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18
+## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19
+##     score_test           p
+## 1  0.289535321 0.590518461
+## 2  0.365540018 0.545445434
+## 3  1.684228863 0.194363482
+## 4  1.421524845 0.233152584
+## 5  0.689269046 0.406413117
+## 6  7.300479246 0.006893622
+## 7  0.145488394 0.702884643
+## 8  0.024124381 0.876568850
+## 9  4.630265434 0.031412704
+## 10 0.094649305 0.758347702
+## 11 0.225446883 0.634920643
+## 12 1.463875737 0.226314456
+## 13 0.224997201 0.635258400
+## 14 1.430170484 0.231736617
+## 15 0.161726734 0.687571705
+## 16 0.003205911 0.954847297
+## 17 0.027270416 0.868835704
+## 18 0.004028741 0.949390364
+## 19 0.114552970 0.735019016
+## 20 0.282463903 0.595090816
 ## 
 ## $tau
-## [1] 0.03614275
+## [1] 0.0429545
 ## 
 ## $rank
 ## [1] 3000
 ## 
 ## $nsam
 ## [1] 3000</code></pre>
-<p>In the results, <code>score_test</code> is the score test statistics, which follow a chi-sq distribution.</p>
+<p>In the results, the column <code>score_test</code> is the score test statistics, which follow a chi-sq distribution.</p>
 </div>
 <div id="handle-positive-semidefinite-relatedness-matrices" class="section level2">
 <h2>Handle positive semidefinite relatedness matrices</h2>
 <p>We now assume that the first two subjects in the sample are monozygotic twins. In this case, the relatedness matrix becomes positive semidefinite. Specifying <code>spd=FALSE</code> will tell <code>coxmeg_plink</code> to handle a positive semidefinite relatedness matrix.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1">sigma[<span class="dv">2</span>,<span class="dv">1</span>] =<span class="st"> </span>sigma[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb42-2" title="2">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="ot">TRUE</span>,<span class="dt">dense=</span><span class="ot">FALSE</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">spd=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">sigma[<span class="dv">2</span>,<span class="dv">1</span>] =<span class="st"> </span>sigma[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb40-2" title="2">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">'bd'</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">spd=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## Warning in chol.default(x, pivot = TRUE): the matrix is either rank-
 ## deficient or indefinite</code></pre>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1">re</a></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1">re</a></code></pre></div>
 <pre><code>## $tau
 ## [1] 0.04038302
 ## 
