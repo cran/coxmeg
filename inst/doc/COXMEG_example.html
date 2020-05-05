@@ -12,7 +12,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2020-03-20" />
+<meta name="date" content="2020-05-05" />
 
 <title>Cox Mixed-Effects Models for Genome-Wide Association Studies</title>
 
@@ -301,7 +301,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Cox Mixed-Effects Models for Genome-Wide Association Studies</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2020-03-20</h4>
+<h4 class="date">2020-05-05</h4>
 
 
 
@@ -355,13 +355,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb5-8" title="8">ycen &lt;-<span class="st"> </span><span class="kw">pmin</span>(y, cen)</a>
 <a class="sourceLine" id="cb5-9" title="9">outcome &lt;-<span class="st"> </span><span class="kw">cbind</span>(ycen,<span class="kw">as.numeric</span>(y <span class="op">&lt;=</span><span class="st"> </span>cen))</a>
 <a class="sourceLine" id="cb5-10" title="10"><span class="kw">head</span>(outcome)</a></code></pre></div>
-<pre><code>##          ycen  
-## [1,] 1.613299 1
-## [2,] 5.092155 1
-## [3,] 5.950849 1
-## [4,] 1.044184 1
-## [5,] 1.099551 1
-## [6,] 2.684580 1</code></pre>
+<pre><code>##             ycen  
+## [1,] 10.21075432 1
+## [2,]  2.08420109 1
+## [3,]  5.80418750 1
+## [4,]  0.07548893 1
+## [5,] 13.27873907 1
+## [6,]  0.58854789 1</code></pre>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">sigma[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</a></code></pre></div>
 <pre><code>## 5 x 5 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                         
@@ -380,22 +380,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">re</a></code></pre></div>
 <pre><code>## $beta
-## [1] 0.09239243
+## [1] 0.05645472
 ## 
 ## $HR
-## [1] 1.096795
+## [1] 1.058079
 ## 
 ## $sd_beta
-## [1] 0.03588352
+## [1] 0.03886043
 ## 
 ## $p
-## [1] 0.01003017
+## [1] 0.1462915
 ## 
 ## $tau
-## [1] 0.2427851
+## [1] 0.2102882
 ## 
 ## $iter
-## [1] 16
+## [1] 18
 ## 
 ## $rank
 ## [1] 1000
@@ -404,7 +404,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## [1] 1000
 ## 
 ## $int_ll
-## [1] 11573.61</code></pre>
+## [1] 11450.82</code></pre>
 <p>In the above result, <code>tau</code> is the estimated variance component, and <code>int_ll</code> is -2*log(lik) of the integrated/marginal likelihood of tau.</p>
 <p>We give more details about specifying <code>order</code> and <code>detap</code>. We set <code>order=1</code> (also by default) to use the first-order approximation of the inverse Hessian matrix in the optimization. By <code>detap=&#39;diagonal&#39;</code>, we tell <code>coxmeg</code> to use a diagonal approximation to compute the determinant, which is much faster under this setting, when estimating the variance component. By default (<code>detap=&#39;NULL&#39;</code>), <code>coxmeg</code> will automatically select a method for computing the determinant based on <code>type</code>, the sample size, and whether the relatedness matrix is symmetric positive definite (SPD).</p>
 <p>It should be noted that when the relatedness matrix is SPD, <code>coxmeg</code> will make use of the sparsity by setting <code>type=&#39;sparse&#39;</code> or <code>type=&#39;bd&#39;</code> regardless of whether the relatedness matrix or its inverse is sparse. However, when the relatedness matrix is symmetric positive semidefinite (SPSD), <code>coxmeg</code> can make use of the sparsity only when its inverse is sparse. When the relatedness matrix is SPSD and its inverse is dense, setting <code>type=&#39;sparse&#39;</code> may result in worse performance. In such a case, it would be better to use <code>type=&#39;dense&#39;</code> or to convert the relatedness matrix to SPD or block-diagonal if possible.</p>
@@ -425,23 +425,23 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb23-6" title="6">re_coxme</a></code></pre></div>
 <pre><code>## Cox mixed-effects model fit by maximum likelihood
 ## 
-##   events, n = 952, 1000
+##   events, n = 940, 1000
 ##   Iterations= 7 34 
 ##                     NULL Integrated    Fitted
-## Log-likelihood -5630.758    -5619.3 -5450.727
+## Log-likelihood -5564.321  -5557.906 -5408.671
 ## 
 ##                    Chisq     df          p   AIC     BIC
-## Integrated loglik  22.92   2.00 1.0559e-05 18.92    9.20
-##  Penalized loglik 360.06 152.51 0.0000e+00 55.05 -685.93
+## Integrated loglik  12.83   2.00 1.6377e-03  8.83   -0.86
+##  Penalized loglik 311.30 136.55 1.1102e-15 38.21 -623.47
 ## 
 ## Model:  Surv(outcome[, 1], outcome[, 2]) ~ as.matrix(pred) + (1 | as.character(1:n)) 
 ## Fixed coefficients
-##                       coef exp(coef)  se(coef)    z    p
-## as.matrix(pred) 0.09240752  1.096812 0.0359322 2.57 0.01
+##                       coef exp(coef)   se(coef)    z    p
+## as.matrix(pred) 0.05650983  1.058137 0.03890067 1.45 0.15
 ## 
 ## Random effects
 ##  Group             Variable Std Dev   Variance 
-##  as.character.1.n. Vmat.1   0.4947312 0.2447589</code></pre>
+##  as.character.1.n. Vmat.1   0.4606879 0.2122333</code></pre>
 <p>In GWAS, we may split the procedure into two separate steps, (1) estimate the variance component under the null model, and (2) estimate the coefficients for the predictors using the estimated variance component. This can be carried out in the following way.</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">&#39;diagonal&#39;</span>)</a></code></pre></div>
 <pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
@@ -452,7 +452,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">tau =<span class="st"> </span>re<span class="op">$</span>tau</a>
 <a class="sourceLine" id="cb32-2" title="2"><span class="kw">print</span>(tau)</a></code></pre></div>
-<pre><code>## [1] 0.2631418</code></pre>
+<pre><code>## [1] 0.2086507</code></pre>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">re2 =<span class="st"> </span><span class="kw">fit_ppl</span>(pred,outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">tau=</span>tau,<span class="dt">order=</span><span class="dv">1</span>)</a></code></pre></div>
 <pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
 <pre><code>## The sample size included is 1000.</code></pre>
@@ -461,23 +461,23 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">re2</a></code></pre></div>
 <pre><code>## $beta
-## [1] 0.0925521
+## [1] 0.05641035
 ## 
 ## $HR
-## [1] 1.09697
+## [1] 1.058032
 ## 
 ## $sd_beta
-## [1] 0.03619051
+## [1] 0.03883509
 ## 
 ## $p
-## [1] 0.01054706
+## [1] 0.1463456
 ## 
 ## $iter
 ## [1] 4
 ## 
 ## $ppl
 ##           [,1]
-## [1,] -5521.708</code></pre>
+## [1,] -5478.329</code></pre>
 </div>
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-sparse-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a sparse relatedness matrix</h2>
@@ -567,16 +567,16 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb47-4" title="4">re</a></code></pre></div>
 <pre><code>## $summary
 ##            beta        HR    sd_beta         p
-## 1   0.031705568 1.0322135 0.02921197 0.2777612
-## 2  -0.037917687 0.9627922 0.02961887 0.2004794
-## 3  -0.002564536 0.9974387 0.02987379 0.9315891
-## 4  -0.036752367 0.9639148 0.02982400 0.2178339
-## 5  -0.007550719 0.9924777 0.02961694 0.7987648
-## 6   0.001713914 1.0017154 0.02978440 0.9541118
-## 7  -0.013228940 0.9868582 0.03010726 0.6603762
-## 8  -0.020978052 0.9792405 0.02981653 0.4816998
-## 9  -0.004138664 0.9958699 0.03015345 0.8908305
-## 10 -0.037597598 0.9631004 0.02985379 0.2078892
+## 1  -0.001421832 0.9985792 0.03004193 0.9622516
+## 2   0.000274503 1.0002745 0.02946136 0.9925659
+## 3   0.035435498 1.0360708 0.02932110 0.2268426
+## 4   0.003821789 1.0038291 0.03009558 0.8989496
+## 5   0.017551274 1.0177062 0.02932354 0.5494805
+## 6   0.022647735 1.0229061 0.02912362 0.4367804
+## 7  -0.004917531 0.9950945 0.02947971 0.8675190
+## 8   0.012820447 1.0129030 0.02926799 0.6613598
+## 9   0.038858044 1.0396229 0.02982924 0.1926830
+## 10 -0.018191099 0.9819734 0.02876464 0.5271177
 ## 
 ## $tau
 ## [1] 0.04052206
@@ -618,29 +618,29 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18
 ## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19
 ##            beta        HR    sd_beta           p
-## 1   0.015918977 1.0160464 0.02946790 0.589049375
-## 2   0.019555213 1.0197477 0.03231411 0.545072538
-## 3  -0.050339883 0.9509062 0.03870719 0.193419248
-## 4   0.044248920 1.0452425 0.03711883 0.233226701
-## 5   0.028589818 1.0290024 0.03442480 0.406255784
-## 6  -0.114675280 0.8916556 0.04246707 0.006926989
-## 7  -0.017704156 0.9824516 0.04668020 0.704491221
-## 8  -0.004239880 0.9957691 0.02725724 0.876387266
-## 9  -0.063788591 0.9382033 0.02966886 0.031553743
-## 10 -0.008419803 0.9916155 0.02737973 0.758447914
-## 11 -0.013617876 0.9864744 0.02868243 0.634943022
-## 12  0.037842157 1.0385673 0.03122050 0.225476750
-## 13 -0.017260734 0.9828874 0.03639247 0.635290175
-## 14 -0.068294624 0.9339853 0.05714641 0.232055155
-## 15 -0.013765449 0.9863289 0.03441605 0.689177313
-## 16  0.002053794 1.0020559 0.03695995 0.955685895
-## 17  0.004719048 1.0047302 0.02868288 0.869317960
-## 18  0.002053149 1.0020553 0.03106828 0.947310105
-## 19 -0.016043727 0.9840843 0.04745123 0.735280396
-## 20 -0.022594637 0.9776587 0.04243540 0.594415892
+## 1   0.015352311 1.0154708 0.02927876 0.600035322
+## 2   0.019289830 1.0194771 0.03209994 0.547886378
+## 3  -0.049213986 0.9519774 0.03847053 0.200803912
+## 4   0.043977623 1.0449590 0.03687021 0.232960102
+## 5   0.028322704 1.0287276 0.03419633 0.407535608
+## 6  -0.113854108 0.8923881 0.04217857 0.006947814
+## 7  -0.018342795 0.9818244 0.04639545 0.692579002
+## 8  -0.004169125 0.9958396 0.02707614 0.877627225
+## 9  -0.063679679 0.9383055 0.02947557 0.030739973
+## 10 -0.008398538 0.9916366 0.02721315 0.757610150
+## 11 -0.013534231 0.9865569 0.02849337 0.634789988
+## 12  0.037074697 1.0377705 0.03101927 0.232003067
+## 13 -0.017161741 0.9829847 0.03614966 0.634971320
+## 14 -0.068087053 0.9341791 0.05678522 0.230517155
+## 15 -0.014220388 0.9858802 0.03418702 0.677440204
+## 16  0.002326025 1.0023287 0.03672381 0.949497091
+## 17  0.004819686 1.0048313 0.02849229 0.865672733
+## 18  0.001444992 1.0014460 0.03087821 0.962675411
+## 19 -0.016068012 0.9840604 0.04715020 0.733266573
+## 20 -0.022148630 0.9780948 0.04216401 0.599376699
 ## 
 ## $tau
-## [1] 0.04417585
+## [1] 0.03535305
 ## 
 ## $rank
 ## [1] 3000
@@ -655,50 +655,50 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb55-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
 ##     snp.id chromosome position allele      afreq  afreq_inc   index  score_test
-## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0 0.291838169
-## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1 0.366232270
-## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2 1.691764516
-## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3 1.421286745
-## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4 0.689776790
-## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5 7.301044913
-## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6 0.143849376
-## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7 0.024195919
-## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8 4.624154477
-## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9 0.094569946
-## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10 0.225419948
-## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11 1.469345792
-## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12 0.224961631
-## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13 1.428815951
-## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14 0.159979359
-## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15 0.003087819
-## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16 0.027068566
-## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17 0.004367344
-## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18 0.114323030
-## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19 0.283513325
+## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0 0.274948425
+## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1 0.361129138
+## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2 1.636877777
+## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3 1.422910275
+## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4 0.686023093
+## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5 7.295630403
+## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6 0.156313850
+## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7 0.023709163
+## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8 4.669012717
+## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9 0.095247662
+## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10 0.225624257
+## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11 1.428706644
+## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12 0.225385317
+## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13 1.438271485
+## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14 0.173024293
+## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15 0.004011749
+## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16 0.028614359
+## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17 0.002189943
+## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18 0.116136972
+## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19 0.275948679
 ##              p
-## 1  0.589044989
-## 2  0.545065201
-## 3  0.193368530
-## 4  0.233191727
-## 5  0.406240313
-## 6  0.006891452
-## 7  0.704483809
-## 8  0.876387443
-## 9  0.031524795
-## 10 0.758445875
-## 11 0.634940862
-## 12 0.225448941
-## 13 0.635285134
-## 14 0.231957773
-## 15 0.689175521
-## 16 0.955685837
-## 17 0.869317652
-## 18 0.947309447
-## 19 0.735275104
-## 20 0.594407651
+## 1  0.600031477
+## 2  0.547879809
+## 3  0.200754388
+## 4  0.232924979
+## 5  0.407520377
+## 6  0.006912251
+## 7  0.692573193
+## 8  0.877627240
+## 9  0.030711578
+## 10 0.757608932
+## 11 0.634787531
+## 12 0.231975631
+## 13 0.634966861
+## 14 0.230419257
+## 15 0.677437891
+## 16 0.949497062
+## 17 0.865672528
+## 18 0.962675159
+## 19 0.733262621
+## 20 0.599368975
 ## 
 ## $tau
-## [1] 0.04417585
+## [1] 0.03535305
 ## 
 ## $rank
 ## [1] 3000
@@ -716,17 +716,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## indefinite</code></pre>
 <div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb59-1" title="1">re</a></code></pre></div>
 <pre><code>## $tau
-## [1] 0.04038302
+## [1] 0.04024134
 ## 
 ## $iter
 ## [1] 15
 ## 
 ## $rank
-## [1] 2999
+## [1] 3000
 ## 
 ## $nsam
 ## [1] 3000</code></pre>
-<p>The warning indicates that the relatedness matrix is not full rank. Because there is a twin pair in the sample, the rank of the relatedness matrix is less than the sample size. If the user is not sure whether the relatedness matrix is positive definite or positive semidefinite, it is better to use <code>spd=FALSE</code>.</p>
+<p>The warning indicates that the relatedness matrix is not full rank. Because there is a twin pair in the sample, the rank of the relatedness matrix is less than the sample size. If the user is not sure whether the relatedness matrix is positive definite or positive semidefinite, it is better to use <code>spd=FALSE</code> although it is slower because coxmeg will perform a eigenvalue decomposition under this setting. In the current version, instead of using the previously proposed GPPL in <span class="citation">(He and Kulminski 2020)</span>, coxmeg uses a modified PPL by turning all zero eigenvalues of the relatedness matrix to a small value (1e-6). This modification makes coxmeg suitable for twin cohorts.</p>
 <div id="refs" class="references">
 <div id="ref-He_2020">
 <p>He, Liang, and Alexander M. Kulminski. 2020. “Fast Algorithms for Conducting Large-Scale GWAS of Age-at-Onset Traits Using Cox Mixed-Effects Models.” <em>Genetics</em>, March, genetics.302940.2019. <a href="https://doi.org/10.1534/genetics.119.302940">https://doi.org/10.1534/genetics.119.302940</a>.</p>
