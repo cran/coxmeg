@@ -78,7 +78,7 @@ sigma[1:5,1:5]
 
 ```
 
-We fit a Cox mixed-effects model using the ```coxmeg``` function. Here, we set ```type='bd'``` because the relatedness matrix is a block-diagonal matrix. Note that ```type='bd'``` should be used only for a block-diagonal matrix or a sparse matrix of which its inverse matrix is also sparse. For a general sparse relatedness matrix of which its inverse is not sparse, it is recommended that ```type='sparse'``` be used. When ```type='sparse'``` is specified, the relatedness matrix will not be inverted during the estimation procedure. The function will automatically treat the relatedness matrix as dense if there are more than 50% non-zero elements in the matrix. 
+We fit a Cox mixed-effects model using the ```coxmeg``` function. Here, we set ```type='bd'``` because the relatedness matrix is a block-diagonal matrix. Note that ```type='bd'``` should be used only for a block-diagonal matrix or a sparse matrix of which its inverse matrix is also sparse. For a general sparse relatedness matrix of which its inverse is not sparse, it is recommended that ```type='sparse'``` be used. When ```type='sparse'``` is specified, the relatedness matrix will not be inverted during the estimation procedure. The function will automatically treat the relatedness matrix as dense if there are more than 50% non-zero elements in the matrix. The argument ```X``` is a design matrix of the predictors, which can be produced by e.g., the function ```model.matrix```. The design matrix for the Cox model does not include the intercept term. The columns in ```X``` should be linear independent; otherwise the function will stop with an error indicating sigularity.    
 
 
 ```{r,echo=TRUE}
@@ -178,7 +178,7 @@ re = coxmeg_plink(pheno,sigma,type='dense',bed=bed,tmp_dir=tempdir(),tau=re$tau,
 re
 ```
 
-In the results, the column ```score_test``` is the score test statistics, which follow a chi-sq distribution.
+In the results, the column ```score_test``` is the score test statistics, which follow a chi-square distribution.
 
 ## Handle positive semidefinite relatedness matrices
 
