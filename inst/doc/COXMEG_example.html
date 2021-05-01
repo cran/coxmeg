@@ -12,112 +12,34 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2020-11-22" />
+<meta name="date" content="2021-05-01" />
 
 <title>Cox Mixed-Effects Models for Genome-Wide Association Studies</title>
 
-<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
-// be compatible with the behavior of Pandoc < 2.8).
-document.addEventListener('DOMContentLoaded', function(e) {
-  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
-  var i, h, a;
-  for (i = 0; i < hs.length; i++) {
-    h = hs[i];
-    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
-    a = h.attributes;
-    while (a.length > 0) h.removeAttribute(a[0].name);
-  }
-});
-</script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
-<style type="text/css">
-a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
-a.anchor-section::before {content: '#';}
-.hasAnchor:hover a.anchor-section {visibility: visible;}
-</style>
-<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
-document.addEventListener('DOMContentLoaded', function() {
-  // Do nothing if AnchorJS is used
-  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
-    return;
-  }
-
-  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-  // Do nothing if sections are already anchored
-  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
-    return null;
-  }
-
-  // Use section id when pandoc runs with --section-divs
-  const section_id = function(x) {
-    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
-            ? x.id : '');
-  };
-
-  // Add anchors
-  h.forEach(function(x) {
-    const id = x.id || section_id(x.parentElement);
-    if (id === '') {
-      return null;
-    }
-    let anchor = document.createElement('a');
-    anchor.href = '#' + id;
-    anchor.classList = ['anchor-section'];
-    x.classList.add('hasAnchor');
-    x.appendChild(anchor);
-  });
-});
-</script>
-
-<style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -126,9 +48,9 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  {  }
 @media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+a.sourceLine::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -379,10 +301,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Cox Mixed-Effects Models for Genome-Wide Association Studies</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2020-11-22</h4>
+<h4 class="date">2021-05-01</h4>
 
 
 
+<div id="coxmeg-1.0.13" class="section level1">
+<h1>coxmeg 1.0.13</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>Time-to-event is one of the most important phenotypes in genetic epidemiology. The R-package, “coxmeg”, provides a set of utilities to fit a Cox mixed-effects model and to efficiently perform genome-wide association analysis of time-to-event phenotypes using a Cox mixed-effects model. More details can be found in <span class="citation">(He and Kulminski 2020)</span>.</p>
@@ -391,56 +315,62 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Installation</h2>
 <div id="most-recent-version" class="section level3">
 <h3>Most-recent version</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">install.packages</span>(<span class="st">&quot;coxmeg&quot;</span>, <span class="dt">repos=</span><span class="st">&quot;http://R-Forge.R-project.org&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(devtools)</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="kw">install_github</span>(<span class="st">&quot;lhe17/coxmeg&quot;</span>)</a></code></pre></div>
 </div>
 </div>
 <div id="functions" class="section level2">
 <h2>Functions</h2>
-<p>The current version provides four functions.</p>
+<p>The current version provides five functions.</p>
 <ul>
 <li><code>coxmeg</code>: Fit a Cox mixed-effects model.</li>
 <li><code>coxmeg_m</code>: Perform a GWAS using a genotype matrix.</li>
 <li><code>coxmeg_plink</code>: Perform a GWAS using plink files.</li>
-<li><code>fit_ppl</code>: Estimate HRs given a variance component.</li>
+<li><code>coxmeg_gds</code>: Perform a GWAS using a GDS file. Read more details <a href="./coxmeg_gds_example.html">here</a>.</li>
+<li><code>fit_ppl</code>: Estimate hazard ratios (HRs) given a variance component.</li>
 </ul>
 </div>
 <div id="fit-a-cox-mixed-effects-model-with-a-sparse-relatedness-matrix" class="section level2">
 <h2>Fit a Cox mixed-effects model with a sparse relatedness matrix</h2>
 <p>We illustrate how to use coxmeg to fit a Cox mixed-effects model with a sparse relatedness matrix. We first simulate a block-diagonal relatedness matrix for a cohort consisting of 200 families, each of which has five members.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">library</span>(coxmeg)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(coxmeg)</a></code></pre></div>
 <pre><code>## Loading required package: Rcpp</code></pre>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">library</span>(MASS)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="kw">library</span>(Matrix)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>n_f &lt;-<span class="st"> </span><span class="dv">200</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>offd &lt;-<span class="st"> </span><span class="fl">0.5</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a>{</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>}</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a>sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a>sigma =<span class="st"> </span><span class="kw">as</span>(sigma,<span class="st">&#39;dgCMatrix&#39;</span>)</span></code></pre></div>
+<pre><code>## Warning: package &#39;Rcpp&#39; was built under R version 3.6.2</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">library</span>(MASS)</a></code></pre></div>
+<pre><code>## Warning: package &#39;MASS&#39; was built under R version 3.6.3</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">library</span>(Matrix)</a></code></pre></div>
+<pre><code>## Warning: package &#39;Matrix&#39; was built under R version 3.6.3</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">n_f &lt;-<span class="st"> </span><span class="dv">200</span></a>
+<a class="sourceLine" id="cb9-2" title="2">mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</a>
+<a class="sourceLine" id="cb9-3" title="3">size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</a>
+<a class="sourceLine" id="cb9-4" title="4">offd &lt;-<span class="st"> </span><span class="fl">0.5</span></a>
+<a class="sourceLine" id="cb9-5" title="5"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</a>
+<a class="sourceLine" id="cb9-6" title="6">{</a>
+<a class="sourceLine" id="cb9-7" title="7">  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</a>
+<a class="sourceLine" id="cb9-8" title="8">  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb9-9" title="9">}</a>
+<a class="sourceLine" id="cb9-10" title="10">sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</a>
+<a class="sourceLine" id="cb9-11" title="11">sigma =<span class="st"> </span><span class="kw">as</span>(sigma,<span class="st">&#39;dgCMatrix&#39;</span>)</a></code></pre></div>
 <p>We use ‘dgCMatrix’ to save memory. Next, we simulate random effects and time-to-event outcomes assuming a constant baseline hazard function. We assume that the variance component is 0.2. We also simulate a risk factor with log(HR)=0.1.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>n =<span class="st"> </span><span class="kw">nrow</span>(sigma)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>tau_var &lt;-<span class="st"> </span><span class="fl">0.2</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>x &lt;-<span class="st"> </span><span class="kw">mvrnorm</span>(<span class="dv">1</span>, <span class="kw">rep</span>(<span class="dv">0</span>,n), tau_var<span class="op">*</span>sigma)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>pred =<span class="st"> </span><span class="kw">rnorm</span>(n,<span class="dv">0</span>,<span class="dv">1</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>myrates &lt;-<span class="st"> </span><span class="kw">exp</span>(x<span class="fl">+0.1</span><span class="op">*</span>pred<span class="dv">-1</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>y &lt;-<span class="st"> </span><span class="kw">rexp</span>(n, <span class="dt">rate =</span> myrates)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>cen &lt;-<span class="st"> </span><span class="kw">rexp</span>(n, <span class="dt">rate =</span> <span class="fl">0.02</span> )</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>ycen &lt;-<span class="st"> </span><span class="kw">pmin</span>(y, cen)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>outcome &lt;-<span class="st"> </span><span class="kw">cbind</span>(ycen,<span class="kw">as.numeric</span>(y <span class="op">&lt;=</span><span class="st"> </span>cen))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="kw">head</span>(outcome)</span></code></pre></div>
-<pre><code>##            ycen  
-## [1,]  5.1714692 1
-## [2,] 16.0226769 1
-## [3,]  0.7977281 1
-## [4,]  0.8306081 1
-## [5,]  0.5520745 1
-## [6,]  0.4309095 1</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>sigma[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">n =<span class="st"> </span><span class="kw">nrow</span>(sigma)</a>
+<a class="sourceLine" id="cb10-2" title="2">tau_var &lt;-<span class="st"> </span><span class="fl">0.2</span></a>
+<a class="sourceLine" id="cb10-3" title="3">x &lt;-<span class="st"> </span><span class="kw">mvrnorm</span>(<span class="dv">1</span>, <span class="kw">rep</span>(<span class="dv">0</span>,n), tau_var<span class="op">*</span>sigma)</a>
+<a class="sourceLine" id="cb10-4" title="4">pred =<span class="st"> </span><span class="kw">rnorm</span>(n,<span class="dv">0</span>,<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb10-5" title="5">myrates &lt;-<span class="st"> </span><span class="kw">exp</span>(x<span class="fl">+0.1</span><span class="op">*</span>pred<span class="dv">-1</span>)</a>
+<a class="sourceLine" id="cb10-6" title="6">y &lt;-<span class="st"> </span><span class="kw">rexp</span>(n, <span class="dt">rate =</span> myrates)</a>
+<a class="sourceLine" id="cb10-7" title="7">cen &lt;-<span class="st"> </span><span class="kw">rexp</span>(n, <span class="dt">rate =</span> <span class="fl">0.02</span> )</a>
+<a class="sourceLine" id="cb10-8" title="8">ycen &lt;-<span class="st"> </span><span class="kw">pmin</span>(y, cen)</a>
+<a class="sourceLine" id="cb10-9" title="9">outcome &lt;-<span class="st"> </span><span class="kw">cbind</span>(ycen,<span class="kw">as.numeric</span>(y <span class="op">&lt;=</span><span class="st"> </span>cen))</a>
+<a class="sourceLine" id="cb10-10" title="10"><span class="kw">head</span>(outcome)</a></code></pre></div>
+<pre><code>##           ycen  
+## [1,] 1.2287286 1
+## [2,] 2.9464495 1
+## [3,] 2.5998999 1
+## [4,] 3.2427894 1
+## [5,] 0.3437086 1
+## [6,] 1.1602202 1</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">sigma[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]</a></code></pre></div>
 <pre><code>## 5 x 5 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                         
 ## [1,] 1.0 0.5 0.5 0.5 0.5
@@ -448,140 +378,143 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## [3,] 0.5 0.5 1.0 0.5 0.5
 ## [4,] 0.5 0.5 0.5 1.0 0.5
 ## [5,] 0.5 0.5 0.5 0.5 1.0</code></pre>
-<p>We fit a Cox mixed-effects model using the <code>coxmeg</code> function. Here, we set <code>type=&#39;bd&#39;</code> because the relatedness matrix is a block-diagonal matrix. Note that <code>type=&#39;bd&#39;</code> should be used only for a block-diagonal matrix or a sparse matrix of which its inverse matrix is also sparse. For a general sparse relatedness matrix of which its inverse is not sparse, it is recommended that <code>type=&#39;sparse&#39;</code> be used. When <code>type=&#39;sparse&#39;</code> is specified, the relatedness matrix will not be inverted during the estimation procedure. The function will automatically treat the relatedness matrix as dense if there are more than 50% non-zero elements in the matrix. The argument <code>X</code> is a design matrix of the predictors, which can be produced by e.g., the function <code>model.matrix</code>. The design matrix for the Cox model does not include the intercept term. The columns in <code>X</code> should be linear independent; otherwise the function will stop with an error indicating sigularity.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">X=</span>pred,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">&#39;diagonal&#39;</span>)</span></code></pre></div>
-<pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
-<pre><code>## There is/are 1 predictors. The sample size included is 1000.</code></pre>
+<p>We fit a Cox mixed-effects model using the <code>coxmeg</code> function. Here, we set <code>type=&#39;bd&#39;</code> because the relatedness matrix is a block-diagonal matrix. Note that <code>type=&#39;bd&#39;</code> should be used only for a block-diagonal matrix or a sparse matrix of which its inverse matrix is also highly sparse. A sparse kinship matrix can be converted to a block-diagonal matrix using <a href="./coxmeg_gds_example.html">kingToMatrix</a>. For a general sparse relatedness matrix of which its inverse is not sparse, it is recommended that <code>type=&#39;sparse&#39;</code> be used. When <code>type=&#39;sparse&#39;</code> is specified, the relatedness matrix will not be inverted during the estimation procedure. The function will automatically treat the relatedness matrix as dense if there are more than 50% non-zero elements in the matrix. The argument <code>X</code> is a design matrix of the predictors, which can be produced by e.g., the function <code>model.matrix</code>. The design matrix for the Cox model does not include the intercept term. The columns in <code>X</code> should be linear independent; otherwise the function will stop with an error indicating sigularity.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">X=</span>pred,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">&#39;diagonal&#39;</span>)</a></code></pre></div>
+<pre><code>## Remove 1 subjects censored before the first failure.</code></pre>
+<pre><code>## There is/are 1 predictors. The sample size included is 999.</code></pre>
 <pre><code>## The relatedness matrix is treated as sparse.</code></pre>
 <pre><code>## The relatedness matrix is inverted.</code></pre>
 <pre><code>## The method for computing the determinant is &#39;diagonal&#39;.</code></pre>
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>re</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">re</a></code></pre></div>
 <pre><code>## $beta
-## [1] 0.1042111
+## [1] 0.09036722
 ## 
 ## $HR
-## [1] 1.109835
+## [1] 1.094576
 ## 
 ## $sd_beta
-## [1] 0.03793683
+## [1] 0.03497242
 ## 
 ## $p
-## [1] 0.006014999
+## [1] 0.009767398
 ## 
 ## $tau
-## [1] 0.1455493
+## [1] 0.08857817
 ## 
 ## $iter
 ## [1] 18
 ## 
 ## $rank
-## [1] 1000
+## [1] 999
 ## 
 ## $nsam
-## [1] 1000
+## [1] 999
 ## 
 ## $int_ll
-## [1] 11588.83</code></pre>
+## [1] 11591.52</code></pre>
 <p>In the above result, <code>tau</code> is the estimated variance component, and <code>int_ll</code> is -2*log(lik) of the integrated/marginal likelihood of tau.</p>
 <p>We give more details about specifying <code>order</code> and <code>detap</code>. We set <code>order=1</code> (also by default) to use the first-order approximation of the inverse Hessian matrix in the optimization. By <code>detap=&#39;diagonal&#39;</code>, we tell <code>coxmeg</code> to use a diagonal approximation to compute the determinant, which is much faster under this setting, when estimating the variance component. By default (<code>detap=&#39;NULL&#39;</code>), <code>coxmeg</code> will automatically select a method for computing the determinant based on <code>type</code>, the sample size, and whether the relatedness matrix is symmetric positive definite (SPD).</p>
 <p>It should be noted that when the relatedness matrix is SPD, <code>coxmeg</code> will make use of the sparsity by setting <code>type=&#39;sparse&#39;</code> or <code>type=&#39;bd&#39;</code> regardless of whether the relatedness matrix or its inverse is sparse. However, when the relatedness matrix is symmetric positive semidefinite (SPSD), <code>coxmeg</code> can make use of the sparsity only when its inverse is sparse. When the relatedness matrix is SPSD and its inverse is dense, setting <code>type=&#39;sparse&#39;</code> may result in worse performance. In such a case, it would be better to use <code>type=&#39;dense&#39;</code> or to convert the relatedness matrix to SPD or block-diagonal if possible.</p>
 <p>We compare the results with coxme, which are slightly different due to different approximation of the log-determinant used in the estimation of the variance component. Also, the integrated log-likelihoods cannot be compared directly because different approximation of log-determinant is used.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="kw">library</span>(coxme)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">library</span>(coxme)</a></code></pre></div>
+<pre><code>## Warning: package &#39;coxme&#39; was built under R version 3.6.2</code></pre>
 <pre><code>## Loading required package: survival</code></pre>
+<pre><code>## Warning: package &#39;survival&#39; was built under R version 3.6.3</code></pre>
 <pre><code>## Loading required package: bdsmatrix</code></pre>
+<pre><code>## Warning: package &#39;bdsmatrix&#39; was built under R version 3.6.2</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;bdsmatrix&#39;</code></pre>
 <pre><code>## The following object is masked from &#39;package:base&#39;:
 ## 
 ##     backsolve</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a>bls &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a><span class="cf">for</span>(i <span class="cf">in</span> (size[<span class="dv">1</span>]<span class="op">-</span><span class="dv">1</span>)<span class="op">:</span><span class="dv">1</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a>{bls &lt;-<span class="st"> </span><span class="kw">c</span>(bls, <span class="kw">c</span>(<span class="kw">rep</span>(offd,i),<span class="dv">1</span>))}</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a>tmat &lt;-<span class="st"> </span><span class="kw">bdsmatrix</span>(<span class="dt">blocksize=</span>size, <span class="dt">blocks=</span><span class="kw">rep</span>(bls,n_f),<span class="dt">dimnames=</span><span class="kw">list</span>(<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n),<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)))</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true"></a>re_coxme =<span class="st"> </span><span class="kw">coxme</span>(<span class="kw">Surv</span>(outcome[,<span class="dv">1</span>],outcome[,<span class="dv">2</span>])<span class="op">~</span><span class="kw">as.matrix</span>(pred)<span class="op">+</span>(<span class="dv">1</span><span class="op">|</span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)), <span class="dt">varlist=</span><span class="kw">list</span>(tmat),<span class="dt">ties=</span><span class="st">&#39;breslow&#39;</span>)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true"></a>re_coxme</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">bls &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb31-2" title="2"><span class="cf">for</span>(i <span class="cf">in</span> (size[<span class="dv">1</span>]<span class="op">-</span><span class="dv">1</span>)<span class="op">:</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb31-3" title="3">{bls &lt;-<span class="st"> </span><span class="kw">c</span>(bls, <span class="kw">c</span>(<span class="kw">rep</span>(offd,i),<span class="dv">1</span>))}</a>
+<a class="sourceLine" id="cb31-4" title="4">tmat &lt;-<span class="st"> </span><span class="kw">bdsmatrix</span>(<span class="dt">blocksize=</span>size, <span class="dt">blocks=</span><span class="kw">rep</span>(bls,n_f),<span class="dt">dimnames=</span><span class="kw">list</span>(<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n),<span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)))</a>
+<a class="sourceLine" id="cb31-5" title="5">re_coxme =<span class="st"> </span><span class="kw">coxme</span>(<span class="kw">Surv</span>(outcome[,<span class="dv">1</span>],outcome[,<span class="dv">2</span>])<span class="op">~</span><span class="kw">as.matrix</span>(pred)<span class="op">+</span>(<span class="dv">1</span><span class="op">|</span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span>n)), <span class="dt">varlist=</span><span class="kw">list</span>(tmat),<span class="dt">ties=</span><span class="st">&#39;breslow&#39;</span>)</a>
+<a class="sourceLine" id="cb31-6" title="6">re_coxme</a></code></pre></div>
 <pre><code>## Cox mixed-effects model fit by maximum likelihood
 ## 
-##   events, n = 952, 1000
-##   Iterations= 10 45 
+##   events, n = 949, 1000
+##   Iterations= 13 57 
 ##                     NULL Integrated    Fitted
-## Log-likelihood -5634.173  -5626.934 -5515.209
+## Log-likelihood -5633.263  -5628.558 -5555.135
 ## 
-##                    Chisq     df          p   AIC     BIC
-## Integrated loglik  14.48   2.00 7.1805e-04 10.48    0.76
-##  Penalized loglik 237.93 104.65 2.2309e-12 28.63 -479.82
+##                    Chisq    df          p   AIC     BIC
+## Integrated loglik   9.41  2.00 9.0497e-03  5.41   -4.30
+##  Penalized loglik 156.26 70.76 2.1521e-08 14.74 -328.82
 ## 
 ## Model:  Surv(outcome[, 1], outcome[, 2]) ~ as.matrix(pred) + (1 | as.character(1:n)) 
 ## Fixed coefficients
-##                     coef exp(coef)   se(coef)    z     p
-## as.matrix(pred) 0.104352  1.109991 0.03797587 2.75 0.006
+##                       coef exp(coef)   se(coef)    z      p
+## as.matrix(pred) 0.09050191  1.094724 0.03501117 2.58 0.0097
 ## 
 ## Random effects
-##  Group             Variable Std Dev   Variance 
-##  as.character.1.n. Vmat.1   0.3836540 0.1471904</code></pre>
+##  Group             Variable Std Dev    Variance  
+##  as.character.1.n. Vmat.1   0.30063307 0.09038024</code></pre>
 <p>In GWAS, we may split the procedure into two separate steps, (1) estimate the variance component under the null model, and (2) estimate the coefficients for the predictors using the estimated variance component. This can be carried out in the following way.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">&#39;diagonal&#39;</span>)</span></code></pre></div>
-<pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
-<pre><code>## There is/are 0 predictors. The sample size included is 1000.</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg</span>(outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">order=</span><span class="dv">1</span>,<span class="dt">detap=</span><span class="st">&#39;diagonal&#39;</span>)</a></code></pre></div>
+<pre><code>## Remove 1 subjects censored before the first failure.</code></pre>
+<pre><code>## There is/are 0 predictors. The sample size included is 999.</code></pre>
 <pre><code>## The relatedness matrix is treated as sparse.</code></pre>
 <pre><code>## The relatedness matrix is inverted.</code></pre>
 <pre><code>## The method for computing the determinant is &#39;diagonal&#39;.</code></pre>
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true"></a>tau =<span class="st"> </span>re<span class="op">$</span>tau</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true"></a><span class="kw">print</span>(tau)</span></code></pre></div>
-<pre><code>## [1] 0.133822</code></pre>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true"></a>re2 =<span class="st"> </span><span class="kw">fit_ppl</span>(pred,outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">tau=</span>tau,<span class="dt">order=</span><span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
-<pre><code>## The sample size included is 1000.</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1">tau =<span class="st"> </span>re<span class="op">$</span>tau</a>
+<a class="sourceLine" id="cb40-2" title="2"><span class="kw">print</span>(tau)</a></code></pre></div>
+<pre><code>## [1] 0.08134891</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1">re2 =<span class="st"> </span><span class="kw">fit_ppl</span>(pred,outcome,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">tau=</span>tau,<span class="dt">order=</span><span class="dv">1</span>)</a></code></pre></div>
+<pre><code>## Remove 1 subjects censored before the first failure.</code></pre>
+<pre><code>## The sample size included is 999.</code></pre>
 <pre><code>## The relatedness matrix is treated as sparse.</code></pre>
 <pre><code>## The relatedness matrix is inverted.</code></pre>
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true"></a>re2</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1">re2</a></code></pre></div>
 <pre><code>## $beta
-## [1] 0.1032305
+## [1] 0.08982291
 ## 
 ## $HR
-## [1] 1.108747
+## [1] 1.093981
 ## 
 ## $sd_beta
-## [1] 0.03771786
+## [1] 0.03483317
 ## 
 ## $p
-## [1] 0.006201893
+## [1] 0.00991842
 ## 
 ## $iter
 ## [1] 3
 ## 
 ## $ppl
 ##           [,1]
-## [1,] -5572.254</code></pre>
+## [1,] -5593.737</code></pre>
 </div>
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-sparse-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a sparse relatedness matrix</h2>
 <p>We illustrate how to perform a GWAS using the <code>coxmeg_plink</code> function. This function supports plink bed files. We provide example files in the package. The example plink files include 20 SNPs and 3000 subjects from 600 families. The following code performs a GWAS for all SNPs in the example bed files. The <code>coxmeg_plink</code> function will write a temporary .gds file for the SNPs in the folder specified by <code>tmp_dir</code>. The user needs to specify a <code>tmp_dir</code> to store the temporary file when <code>bed</code> is provided. The temporary file is removed after the analysis is done.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true"></a><span class="kw">library</span>(coxmeg)</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true"></a>bed =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;example_null.bed&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true"></a>bed =<span class="st"> </span><span class="kw">substr</span>(bed,<span class="dv">1</span>,<span class="kw">nchar</span>(bed)<span class="op">-</span><span class="dv">4</span>)</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true"></a>pheno =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_pheno.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true"></a>cov =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_cov.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true"></a></span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true"></a><span class="co">## building a relatedness matrix</span></span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true"></a>n_f &lt;-<span class="st"> </span><span class="dv">600</span></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true"></a>mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true"></a>size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true"></a>offd &lt;-<span class="st"> </span><span class="fl">0.5</span></span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true"></a>{</span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true"></a>  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true"></a>  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb42-16"><a href="#cb42-16" aria-hidden="true"></a>}</span>
-<span id="cb42-17"><a href="#cb42-17" aria-hidden="true"></a>sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</span>
-<span id="cb42-18"><a href="#cb42-18" aria-hidden="true"></a></span>
-<span id="cb42-19"><a href="#cb42-19" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="kw">library</span>(coxmeg)</a>
+<a class="sourceLine" id="cb50-2" title="2">bed =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;example_null.bed&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb50-3" title="3">bed =<span class="st"> </span><span class="kw">substr</span>(bed,<span class="dv">1</span>,<span class="kw">nchar</span>(bed)<span class="op">-</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb50-4" title="4">pheno =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_pheno.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb50-5" title="5">cov =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;ex_cov.txt&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;coxmeg&quot;</span>)</a>
+<a class="sourceLine" id="cb50-6" title="6"></a>
+<a class="sourceLine" id="cb50-7" title="7"><span class="co">## building a relatedness matrix</span></a>
+<a class="sourceLine" id="cb50-8" title="8">n_f &lt;-<span class="st"> </span><span class="dv">600</span></a>
+<a class="sourceLine" id="cb50-9" title="9">mat_list &lt;-<span class="st"> </span><span class="kw">list</span>()</a>
+<a class="sourceLine" id="cb50-10" title="10">size &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">5</span>,n_f)</a>
+<a class="sourceLine" id="cb50-11" title="11">offd &lt;-<span class="st"> </span><span class="fl">0.5</span></a>
+<a class="sourceLine" id="cb50-12" title="12"><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n_f)</a>
+<a class="sourceLine" id="cb50-13" title="13">{</a>
+<a class="sourceLine" id="cb50-14" title="14">  mat_list[[i]] &lt;-<span class="st"> </span><span class="kw">matrix</span>(offd,size[i],size[i])</a>
+<a class="sourceLine" id="cb50-15" title="15">  <span class="kw">diag</span>(mat_list[[i]]) &lt;-<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb50-16" title="16">}</a>
+<a class="sourceLine" id="cb50-17" title="17">sigma &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">bdiag</span>(mat_list))</a>
+<a class="sourceLine" id="cb50-18" title="18"></a>
+<a class="sourceLine" id="cb50-19" title="19">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## Excluding 0 SNP on non-autosomes
 ## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true"></a>re</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
 ##     snp.id chromosome position allele      afreq  afreq_inc   index
 ## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0
@@ -636,25 +569,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## [1] 3000</code></pre>
 <p>The above code first retrieves the full path of the files. If the full path is not given, <code>coxmeg_plink</code> will search the current working directory. The file name of the bed file should not include the suffix (.bed). The phenotype and covariate files have the same format as used in plink, and the IDs must be consistent with the bed files. Specifically, the phenotype file should include four columns including family ID, individual ID, time, and status. The covariate file always starts with two columns, family ID and individual ID. Missing values in the phenotype and covariate files are denoted by -9 and NA, respectively. In the current version, the <code>coxmeg_plink</code> function does not impute genotypes itself, and only SNPs without missing values will be analyzed, so it will be better to use imputed genotype data.</p>
 <p>The <code>coxmeg_plink</code> function fist estimates the variance component with only the covariates, and then uses it to analyze each SNP after filtering. These two steps can be done separately as follows. The first command without <code>bed</code> only esitmates the variance component tau, and the second command uses the estimated tau to analyze the SNPs.</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb54-2" title="2">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <p>When the genotypes of a group of SNPs are stored in a matrix, the function <code>coxmeg_m</code> can be used to perform GWAS for each of the SNPs. Similarly, <code>coxmeg_m</code> first estimates the variance component without the SNPs. In the following example, we simulate 10 independent SNPs, and use <code>coxmeg_m</code> to perform association analysis.</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true"></a>geno =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rbinom</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="dv">2</span>,<span class="kw">runif</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="fl">0.05</span>,<span class="fl">0.5</span>)),<span class="kw">nrow</span>(sigma),<span class="dv">10</span>)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true"></a>pheno_m =<span class="st"> </span><span class="kw">read.table</span>(pheno)</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_m</span>(geno,pheno_m[,<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>],sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true"></a>re</span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb55-1" title="1">geno =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rbinom</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="dv">2</span>,<span class="kw">runif</span>(<span class="kw">nrow</span>(sigma)<span class="op">*</span><span class="dv">10</span>,<span class="fl">0.05</span>,<span class="fl">0.5</span>)),<span class="kw">nrow</span>(sigma),<span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb55-2" title="2">pheno_m =<span class="st"> </span><span class="kw">read.table</span>(pheno)</a>
+<a class="sourceLine" id="cb55-3" title="3">re =<span class="st"> </span><span class="kw">coxmeg_m</span>(geno,pheno_m[,<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>],sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb55-4" title="4">re</a></code></pre></div>
 <pre><code>## $summary
-##            beta        HR    sd_beta         p
-## 1   0.044424574 1.0454261 0.02901496 0.1257466
-## 2  -0.007561544 0.9924670 0.02904237 0.7945842
-## 3   0.021173592 1.0213993 0.02961872 0.4746882
-## 4   0.002453742 1.0024568 0.02949475 0.9336985
-## 5  -0.033833871 0.9667321 0.02992931 0.2582826
-## 6  -0.043353006 0.9575733 0.02933136 0.1393963
-## 7  -0.018714997 0.9814590 0.02955508 0.5265871
-## 8   0.020541227 1.0207537 0.02879740 0.4756593
-## 9   0.029021049 1.0294463 0.02967102 0.3280278
-## 10 -0.011879835 0.9881905 0.02952318 0.6873970
+##            beta        HR    sd_beta          p
+## 1   0.004247343 1.0042564 0.02942896 0.88524362
+## 2  -0.004339977 0.9956694 0.02932483 0.88234538
+## 3   0.003321592 1.0033271 0.02990764 0.91156745
+## 4   0.017614068 1.0177701 0.02851416 0.53675302
+## 5   0.068604270 1.0710123 0.02910040 0.01839834
+## 6   0.033299964 1.0338606 0.02897883 0.25050925
+## 7   0.006268400 1.0062881 0.02944437 0.83141307
+## 8  -0.015538466 0.9845816 0.02955064 0.59900974
+## 9   0.003567151 1.0035735 0.02946705 0.90364700
+## 10  0.013368551 1.0134583 0.02989204 0.65471054
 ## 
 ## $tau
 ## [1] 0.04052206
@@ -669,10 +602,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-dense-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a dense relatedness matrix</h2>
 <p>When the relatedness matrix is dense and large (&gt;5000), <code>type=&#39;dense&#39;</code> should be used. In thise case, it will be more efficient to use preconditioned conjugate gradiant (PCG) (e.g., by explicitly specifying <code>solver=2</code>) and stochastic lanczos quadrature (SLQ) <code>detap=&#39;slq&#39;</code> in the optimization. These can be specified as follows.</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;dense&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">&#39;slq&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;dense&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">&#39;slq&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>)</a></code></pre></div>
+<p>If <code>solver</code> is not specified, <code>coxmeg_plink</code> will by default choose PCG as a solver when <code>type=&#39;dense&#39;</code>. If <code>detap</code> is not specified, <code>coxmeg_plink</code> will by default use <code>detap=&#39;slq&#39;</code> for a dense matrix when the sample size exceeds 3000. The number of Monte Carlo samples in the SLQ can be specified by <code>mc</code> (by default <code>mc=100</code>).</p>
+<p>The above command estimates HRs and reports p-values. Instead, a score test, which is computationally much more efficient, can be used by specifying <code>score=TRUE</code>.</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb58-1" title="1">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;dense&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">&#39;slq&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>,<span class="dt">score=</span><span class="ot">TRUE</span>)</a></code></pre></div>
 <pre><code>## Excluding 0 SNP on non-autosomes
 ## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true"></a>re</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb60-1" title="1">re</a></code></pre></div>
 <pre><code>## $summary
 ##     snp.id chromosome position allele      afreq  afreq_inc   index
 ## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0
@@ -695,104 +631,46 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17
 ## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18
 ## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19
-##            beta        HR    sd_beta           p
-## 1   0.015177713 1.0152935 0.02922097 0.603473668
-## 2   0.019208641 1.0193943 0.03203445 0.548756485
-## 3  -0.048872403 0.9523026 0.03839834 0.203098323
-## 4   0.043893776 1.0448714 0.03679423 0.232887867
-## 5   0.028240879 1.0286434 0.03412642 0.407932725
-## 6  -0.113598489 0.8926163 0.04209040 0.006956556
-## 7  -0.018542478 0.9816284 0.04630857 0.688853568
-## 8  -0.004149133 0.9958595 0.02702086 0.877962252
-## 9  -0.063645106 0.9383380 0.02941643 0.030495799
-## 10 -0.008393988 0.9916411 0.02716233 0.757298354
-## 11 -0.013508629 0.9865822 0.02843561 0.634744021
-## 12  0.036837018 1.0375239 0.03095780 0.234081554
-## 13 -0.017134394 0.9830116 0.03607544 0.634815409
-## 14 -0.068017508 0.9342441 0.05667493 0.230087313
-## 15 -0.014357820 0.9857448 0.03411696 0.673871060
-## 16  0.002409325 1.0024122 0.03665156 0.947588051
-## 17  0.004851943 1.0048637 0.02843408 0.864508170
-## 18  0.001259145 1.0012599 0.03082018 0.967411842
-## 19 -0.016079133 0.9840494 0.04705817 0.732586984
-## 20 -0.022014789 0.9782258 0.04208090 0.600867091
+##           score  score_test          p
+## 1   0.015731431 0.284915628 0.59349729
+## 2   0.019537166 0.364147765 0.54621165
+## 3  -0.049037261 1.669161029 0.19637095
+## 4   0.044750829 1.421986351 0.23307674
+## 5   0.028694042 0.688246877 0.40676132
+## 6  -0.110065139 7.299184776 0.00689859
+## 7  -0.017846384 0.148832197 0.69965386
+## 8  -0.004209841 0.023985738 0.87692121
+## 9  -0.063092716 4.642530182 0.03118899
+## 10 -0.008409498 0.094820647 0.75813589
+## 11 -0.013558821 0.225502351 0.63487901
+## 12  0.037870134 1.452836527 0.22807335
+## 13 -0.017137550 0.225089257 0.63518922
+## 14 -0.066389447 1.432826764 0.23130366
+## 15 -0.013905384 0.165261969 0.68435744
+## 16  0.002166564 0.003450204 0.95316044
+## 17  0.004762768 0.027683654 0.86785472
+## 18  0.001804748 0.003388839 0.95357838
+## 19 -0.015963997 0.115030323 0.73448829
+## 20 -0.022237828 0.280375767 0.59645503
 ## 
 ## $tau
-## [1] 0.03272157
+## [1] 0.04052206
 ## 
 ## $rank
 ## [1] 3000
 ## 
 ## $nsam
 ## [1] 3000</code></pre>
-<p>If <code>solver</code> is not specified, <code>coxmeg_plink</code> will by default choose PCG as a solver when <code>type=&#39;dense&#39;</code>. If <code>detap</code> is not specified, <code>coxmeg_plink</code> will by default use <code>detap=&#39;slq&#39;</code> for a dense matrix when the sample size exceeds 3000. The number of Monte Carlo samples in the SLQ can be specified by <code>mc</code> (by default <code>mc=100</code>).</p>
-<p>The above command estimates HRs and reports p-values. Instead, a score test, which is computationally much more efficient, can be used by specifying <code>score=TRUE</code>.</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;dense&#39;</span>,<span class="dt">bed=</span>bed,<span class="dt">tmp_dir=</span><span class="kw">tempdir</span>(),<span class="dt">tau=</span>re<span class="op">$</span>tau,<span class="dt">cov_file=</span>cov,<span class="dt">detap=</span><span class="st">&#39;slq&#39;</span>,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">solver=</span><span class="dv">2</span>,<span class="dt">score=</span><span class="ot">TRUE</span>)</span></code></pre></div>
-<pre><code>## Excluding 0 SNP on non-autosomes
-## Excluding 0 SNP (monomorphic: TRUE, MAF: 0.05, missing rate: 0)</code></pre>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true"></a>re</span></code></pre></div>
-<pre><code>## $summary
-##     snp.id chromosome position allele      afreq  afreq_inc   index  score_test
-## 1   null_0          1        1    d/D 0.30983333 0.30983333  null_0 0.269794044
-## 2   null_1          1        2    d/D 0.23466667 0.23466667  null_1 0.359561131
-## 3   null_2          1        3    D/d 0.14033333 0.14033333  null_2 1.620305645
-## 4   null_3          1        4    D/d 0.16183333 0.16183333  null_3 1.423350496
-## 5   null_4          1        5    d/D 0.19933333 0.19933333  null_4 0.684861880
-## 6   null_5          1        6    D/d 0.11800000 0.11800000  null_5 7.293360180
-## 7   null_6          1        7    d/D 0.09483333 0.09483333  null_6 0.160335285
-## 8   null_7          1        8    D/d 0.49683333 0.49683333  null_7 0.023578508
-## 9   null_8          1        9    d/D 0.31366667 0.31366667  null_8 4.682715470
-## 10  null_9          1       10    D/d 0.49183333 0.49183333  null_9 0.095500698
-## 11 null_10          1       11    d/D 0.34833333 0.34833333 null_10 0.225685592
-## 12 null_11          1       12    D/d 0.25100000 0.25100000 null_11 1.416052285
-## 13 null_12          1       13    d/D 0.17500000 0.17500000 null_12 0.225592904
-## 14 null_13          1       14    D/d 0.06333333 0.06333333 null_13 1.440927787
-## 15 null_14          1       15    D/d 0.20833333 0.20833333 null_14 0.177110105
-## 16 null_15          1       16    d/D 0.17050000 0.17050000 null_15 0.004321219
-## 17 null_16          1       17    D/d 0.33550000 0.33550000 null_16 0.029117516
-## 18 null_17          1       18    d/D 0.26633333 0.26633333 null_17 0.001669114
-## 19 null_18          1       19    D/d 0.09433333 0.09433333 null_18 0.116752885
-## 20 null_19          1       20    d/D 0.11650000 0.11650000 null_19 0.273701523
-##              p
-## 1  0.603469963
-## 2  0.548750073
-## 3  0.203049175
-## 4  0.232852714
-## 5  0.407917564
-## 6  0.006920991
-## 7  0.688848015
-## 8  0.877962237
-## 9  0.030467551
-## 10 0.757297282
-## 11 0.634741516
-## 12 0.234054272
-## 13 0.634811056
-## 14 0.229989263
-## 15 0.673868625
-## 16 0.947588027
-## 17 0.864507982
-## 18 0.967411663
-## 19 0.732583285
-## 20 0.600859498
-## 
-## $tau
-## [1] 0.03272157
-## 
-## $rank
-## [1] 3000
-## 
-## $nsam
-## [1] 3000</code></pre>
-<p>In the results, the column <code>score_test</code> is the score test statistics, which follow a chi-square distribution.</p>
+<p>In this result, the column <code>score_test</code> is the score test statistic, which follows a <span class="math inline">\(\chi^2\)</span> distribution with 1 d.f. The column <code>score</code> is the score function divided by its variance. Note that <code>score</code> is not the estimate of log(HR) under the full model. It is actually a one-step update of the Newton-Raphson algorithm starting from the values estimated under the null model. Comparing <code>score</code> with log(HR) estimated in the previous section, we see that they are close to each other in this example. However, the difference can be large if the genotype is highly correlated with the covariates or random effects.</p>
 </div>
 <div id="handle-positive-semidefinite-relatedness-matrices" class="section level2">
 <h2>Handle positive semidefinite relatedness matrices</h2>
-<p>We now assume that the first two subjects in the sample are monozygotic twins. In this case, the relatedness matrix becomes positive semidefinite. Specifying <code>spd=FALSE</code> will tell <code>coxmeg_plink</code> to handle a positive semidefinite relatedness matrix.</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true"></a>sigma[<span class="dv">2</span>,<span class="dv">1</span>] =<span class="st"> </span>sigma[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true"></a>re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">spd=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<p>We now assume that the first two subjects in the sample are monozygotic twins. In this case, the relatedness matrix becomes positive semidefinite. Specifying <code>spd=FALSE</code> will let <code>coxmeg_plink</code> handle a positive semidefinite relatedness matrix.</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb62-1" title="1">sigma[<span class="dv">2</span>,<span class="dv">1</span>] =<span class="st"> </span>sigma[<span class="dv">1</span>,<span class="dv">2</span>] =<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb62-2" title="2">re =<span class="st"> </span><span class="kw">coxmeg_plink</span>(pheno,sigma,<span class="dt">type=</span><span class="st">&#39;bd&#39;</span>,<span class="dt">cov_file=</span>cov,<span class="dt">verbose=</span><span class="ot">FALSE</span>,<span class="dt">spd=</span><span class="ot">FALSE</span>)</a></code></pre></div>
 <pre><code>## Warning in chol.default(x, pivot = TRUE): the matrix is either rank-deficient or
 ## indefinite</code></pre>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true"></a>re</span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb64-1" title="1">re</a></code></pre></div>
 <pre><code>## $tau
 ## [1] 0.04024134
 ## 
@@ -804,10 +682,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 
 ## $nsam
 ## [1] 3000</code></pre>
-<p>The warning indicates that the relatedness matrix is not full rank. Because there is a twin pair in the sample, the rank of the relatedness matrix is less than the sample size. If the user is not sure whether the relatedness matrix is positive definite or positive semidefinite, it is better to use <code>spd=FALSE</code> although it is slower because coxmeg will perform a eigenvalue decomposition under this setting. In the current version, instead of using the previously proposed GPPL in <span class="citation">(He and Kulminski 2020)</span>, coxmeg uses a modified PPL by turning all zero eigenvalues of the relatedness matrix to a small value (1e-6). This modification makes coxmeg suitable for twin cohorts.</p>
-<div id="refs" class="references hanging-indent">
+<p>The warning indicates that the relatedness matrix is not full rank. Because there is a twin pair in the sample, the rank of the relatedness matrix is less than the sample size. If the user is not sure whether the relatedness matrix is positive definite or positive semidefinite, it is better to use <code>spd=FALSE</code> although this is slower because coxmeg will perform an eigenvalue decomposition under this setting. In the current version, instead of using the previously proposed GPPL in <span class="citation">(He and Kulminski 2020)</span>, coxmeg uses a modified PPL by turning all zero eigenvalues of the relatedness matrix to a small value (1e-6). This modification makes coxmeg suitable for twin cohorts.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
 <div id="ref-He_2020">
 <p>He, Liang, and Alexander M. Kulminski. 2020. “Fast Algorithms for Conducting Large-Scale GWAS of Age-at-Onset Traits Using Cox Mixed-Effects Models.” <em>Genetics</em>, March, genetics.302940.2019. <a href="https://doi.org/10.1534/genetics.119.302940">https://doi.org/10.1534/genetics.119.302940</a>.</p>
+</div>
 </div>
 </div>
 </div>

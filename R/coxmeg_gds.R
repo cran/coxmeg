@@ -1,54 +1,59 @@
 
-#' Fit a Cox mixed-effects model for estimating HRs for a set of predictors
+#' Perform GWAS using a Cox mixed-effects model with GDS files as input
 #'
-#' \code{coxmeg_m} first estimates the variance component under a null model with only cov, and then analyzing each predictor in X one by one.
+#' \code{coxmeg_gds} first estimates the variance component under a null model with only cov if tau is not given, and then analyzing each SNP in the gds file.
 #' 
 #' @section About \code{type}:
 #' 'bd' is used for a block-diagonal relatedness matrix, or a sparse matrix the inverse of which is also sparse. 'sparse' is used for a general sparse relatedness matrix the inverse of which is not sparse. 
+#' @section About \code{corr}:
+#' The subjects in \code{corr} must be in the same order as in \code{pheno} and \code{cov}.
 #' @section About \code{spd}:
-#' When \code{spd=TRUE}, the relatedness matrix is treated as SPD. If the matrix is SPSD or not sure, use \code{spd=FALSE}.
+#' When \code{spd=TRUE}, the relatedness matrix is treated as SPD. If the matrix is SPSD or not sure, set \code{spd=FALSE}. 
 #' @section About \code{solver}:
 #' When \code{solver=1,3}/\code{solver=2}, Cholesky decompositon/PCG is used to solve the linear system. When \code{solver=3}, the solve function in the Matrix package is used, and when \code{solver=1}, it uses RcppEigen:LDLT to solve linear systems. When \code{type='dense'}, it is recommended to set \code{solver=2} to have better computational performance.
 #' @section About \code{detap}:
 #' When \code{detap='exact'}, the exact log-determinant is computed for estimating the variance component. Specifying \code{detap='diagonal'} uses diagonal approximation, and is only effective for a sparse relatedness matrix. Specifying \code{detap='slq'} uses stochastic lanczos quadrature approximation.
 #' 
-#' @param outcome A matrix contains time (first column) and status (second column). The status is a binary variable (1 for failure / 0 for censored).
+#' 
+#' @param gds A GDS object created by \code{\link{snpgdsOpen}} or \code{\link{seqOpen}}.
+#' @param pheno A data.frame containing the following four columns, family ID, individual ID, time and status. The status is a binary variable (1 for events/0 for censored). Missing values should be denoted as NA.
 #' @param corr A relatedness matrix. Can be a matrix or a 'dgCMatrix' class in the Matrix package. Must be symmetric positive definite or symmetric positive semidefinite.
-#' @param X A matrix of the preidctors. Can be quantitative or binary values. Categorical variables need to be converted to dummy variables. Each row is a sample, and the predictors are columns.
 #' @param type A string indicating the sparsity structure of the relatedness matrix. Should be 'bd' (block diagonal), 'sparse', or 'dense'. See details.
-#' @param cov An optional matrix of the covariates included in the null model for estimating the variance component. Can be quantitative or binary values. Categorical variables need to be converted to dummy variables. Each row is a sample, and the covariates are columns. 
-#' @param FID An optional string vector of family ID. If provided, the data will be reordered according to the family ID.
-#' @param tau An optional positive value for the variance component. If \code{tau} is given, the function will skip estimating the variance component, and use the given \code{tau} to analyze the predictors.
+#' @param tau An optional positive value for the variance component. If tau is given, the function will skip estimating the variance component, and use the given tau to analyze the SNPs.
+#' @param cov An optional data.frame of covariates. Same as \code{pheno}, the first two columns are family ID and individual ID. The covariates are included in the null model for estimating the variance component. The covariates can be quantitative or binary values. Categorical variables need to be converted to dummy variables. Missing values should be denoted as NA.
 #' @param eps An optional positive value indicating the relative convergence tolerance in the optimization algorithm. Default is 1e-6. A smaller value (e.g., 1e-8) can be used for better precision of the p-values in the situation where most SNPs under investigation have a very low minor allele count (<5).
-#' @param min_tau An optional positive value indicating the lower bound in the optimization algorithm for the variance component \code{tau}. Default is 1e-4.
-#' @param max_tau An optional positive value indicating the upper bound in the optimization algorithm for the variance component \code{tau}. Default is 5.
-#' @param opt An optional logical value for the Optimization algorithm for tau. Can have the following values: 'bobyqa', 'Brent' or 'NM'. Default is 'bobyqa'.
+#' @param min_tau An optional positive value indicating the lower bound in the optimization algorithm for the variance component tau. Default is 1e-4.
+#' @param max_tau An optional positive value indicating the upper bound in the optimization algorithm for the variance component tau. Default is 5.
+#' @param opt An optional string value for the Optimization algorithm for tau. Can have the following values: 'bobyqa', 'Brent' or 'NM'. Default is 'bobyqa'.
 #' @param spd An optional logical value indicating whether the relatedness matrix is symmetric positive definite. Default is TRUE. See details.
 #' @param detap An optional string indicating whether to use approximation for log-determinant. Can be 'exact', 'diagonal' or 'slq'. Default is NULL, which lets the function select a method based on 'type' and other information. See details.
-#' @param solver An optional bianry value that can be either 1 (Cholesky Decomposition using RcppEigen), 2 (PCG) or 3 (Cholesky Decomposition using Matrix). Default is NULL, which lets the function select a solver. See details.
+#' @param solver An optional binary value taking either 1 or 2. Default is 1. See details.
+#' @param snp.id An optional vector of snp.id (or variant.id). Only these SNPs will be analyzed. Default is \code{NULL}, which selects all SNPs.
+#' @param maf An optional positive value. All SNPs with MAF<maf in the GDS file will not be analyzed. If \code{snp.id} is not \code{NULL}, both SNP filters will be applied in combination. Default is 0.05.
 #' @param score An optional logical value indicating whether to perform a score test. Default is FALSE.
-#' @param order An optional integer value starting from 0. Only valid when \code{dense=FALSE}. It specifies the order of approximation used in the inexact newton method. Default is NULL, which lets coxmeg choose an optimal order.
+#' @param threshold An optional non-negative value. If threshold>0, coxmeg_gds will reestimate HRs for those SNPs with a p-value<threshold by first estimating a variant-specific variance component. Default is 0.
+#' @param order An optional integer value starting from 0. Only effective when \code{dense=FALSE}. It specifies the order of approximation used in the inexact newton method. Default is NULL, which lets coxmeg choose an optimal order.
 #' @param verbose An optional logical value indicating whether to print additional messages. Default is TRUE.
-#' @param threshold An optional non-negative value. If threshold>0, coxmeg_m will reestimate HRs for those SNPs with a p-value<threshold by first estimating a variant-specific variance component. Default is 0.
 #' @param mc An optional integer value specifying the number of Monte Carlo samples used for approximating the log-determinant. Only valid when \code{dense=TRUE} and \code{detap='slq'}. Default is 100.
 #' @return beta: The estimated coefficient for each predictor in X.
 #' @return HR: The estimated HR for each predictor in X.
 #' @return sd_beta: The estimated standard error of beta.
 #' @return p: The p-value of each SNP.
 #' @return tau: The estimated variance component.
-#' @return iter: The number of iterations until convergence.
+#' @return rank: The rank of the relatedness matrix.
+#' @return nsam: Actual sample size.
+#' @author Liang He, Stephanie Gogarten
 #' @keywords Cox mixed-effects model
-#' @export coxmeg_m
+#' @export coxmeg_gds
 #' @examples
 #' library(Matrix)
 #' library(MASS)
 #' library(coxmeg)
 #' 
-#' ## simulate a block-diagonal relatedness matrix
-#' tau_var <- 0.2
-#' n_f <- 100
+#' ## build a block-diagonal relatedness matrix
+#' n_f <- 600
 #' mat_list <- list()
-#' size <- rep(10,n_f)
+#' size <- rep(5,n_f)
 #' offd <- 0.5
 #' for(i in 1:n_f)
 #' {
@@ -56,26 +61,49 @@
 #'   diag(mat_list[[i]]) <- 1
 #' }
 #' sigma <- as.matrix(bdiag(mat_list))
-#' n <- nrow(sigma)
 #' 
-#' ## simulate random effects and outcomes
-#' x <- mvrnorm(1, rep(0,n), tau_var*sigma)
-#' myrates <- exp(x-1)
-#' y <- rexp(n, rate = myrates)
-#' cen <- rexp(n, rate = 0.02 )
-#' ycen <- pmin(y, cen)
-#' outcome <- cbind(ycen,as.numeric(y <= cen))
+#' ## Example data files
+#' pheno.file = system.file("extdata", "ex_pheno.txt", package = "coxmeg")
+#' cov.file = system.file("extdata", "ex_cov.txt", package = "coxmeg")
+#' bed = system.file("extdata", "example_null.bed", package = "coxmeg")
+#' bed = substr(bed,1,nchar(bed)-4)
 #' 
-#' ## simulate genotypes
-#' g = matrix(rbinom(n*5,2,0.5),n,5)
+#' ## Read phenotype and covariates
+#' pheno <- read.table(pheno.file, header=FALSE, as.is=TRUE, na.strings="-9")
+#' cov <- read.table(cov.file, header=FALSE, as.is=TRUE)
 #' 
-#' ## The following command will first estimate the variance component without g, 
-#' ## and then use it to estimate the HR for each preditor in g.
-#' re = coxmeg_m(g,outcome,sigma,type='bd',tau=0.5,detap='diagonal',order=1)
+#' ## SNPRelate GDS object
+#' gdsfile <- tempfile()
+#' SNPRelate::snpgdsBED2GDS(bed.fn=paste0(bed,".bed"), 
+#'                          fam.fn=paste0(bed,".fam"), 
+#'                          bim.fn=paste0(bed,".bim"), 
+#'                          out.gdsfn=gdsfile, verbose=FALSE)
+#' gds <- SNPRelate::snpgdsOpen(gdsfile)
+#' 
+#' ## Estimate variance component under a null model
+#' re <- coxmeg_gds(gds,pheno,sigma,type='bd',cov=cov,detap='diagonal',order=1)
 #' re
+#' 
+#' SNPRelate::snpgdsClose(gds)
+#' unlink(gdsfile)
+#' 
+#' ## SeqArray GDS object
+#' gdsfile <- tempfile()
+#' SeqArray::seqBED2GDS(bed.fn=paste0(bed,".bed"), 
+#'                      fam.fn=paste0(bed,".fam"), 
+#'                      bim.fn=paste0(bed,".bim"), 
+#'                      out.gdsfn=gdsfile, verbose=FALSE)
+#' gds <- SeqArray::seqOpen(gdsfile)
+#' 
+#' ## Estimate variance component under a null model
+#' re <- coxmeg_gds(gds,pheno,sigma,type='bd',cov=cov,detap='diagonal',order=1)
+#' re
+#' 
+#' SeqArray::seqClose(gds)
+#' unlink(gdsfile)
 
 
-coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-04,max_tau=5,eps=1e-6,order=NULL,detap=NULL,opt='bobyqa',score=FALSE,threshold=0,solver=NULL,spd=TRUE,verbose=TRUE,mc=100){
+coxmeg_gds <- function(gds,pheno,corr,type,cov=NULL,tau=NULL,snp.id=NULL,maf=0.05,min_tau=1e-04,max_tau=5,eps=1e-6,order=NULL,detap=NULL,opt='bobyqa',score=FALSE,threshold=0,solver=NULL,spd=TRUE,mc=100,verbose=TRUE){
   
   if(eps<0)
   {eps <- 1e-6}
@@ -92,36 +120,35 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
     {stop("The detap argument should be 'exact', 'diagonal' or 'slq'.")}
   }
   
-  X = as.matrix(X)
-  outcome <- as.matrix(outcome)
-  if(is.null(cov)==FALSE)
-  {cov = as.matrix(cov)}
+  phenod <- pheno
   
-  nro = nrow(outcome)
-  if((nro!=nrow(corr)) || (nro!=ncol(corr)))
-  {stop("The phenotype and the relatedness matrix have different sample sizes.")}
-  
-  if(nro!=nrow(X))
-  {stop("The phenotype and predictor matrices have different sample sizes.")}
-  
-  ## family structure
-  if(is.null(FID)==FALSE)
-  {
-    ord <- order(FID)
-    FID <- as.character(FID[ord])
-    X <- as.matrix(X[ord,])
-    outcome <- as.matrix(outcome[ord,])
-    corr <- corr[ord,ord]
-    if(is.null(cov)==FALSE)
-    {cov <- as.matrix(cov[ord,])}
+  if(is.null(cov)==TRUE)
+  {samind = which(!is.na(phenod[,3])&(!is.na(phenod[,4])))}else{
+    covna = apply(as.matrix(cov[,3:ncol(cov)]),1,function(x) sum(is.na(x)))
+    samind = which(!is.na(phenod[,3])&(!is.na(phenod[,4])&(covna==0)))
   }
+  
+  # remove any samples not included in GDS
+  # samind <- samind & .gdsHasSamp(gds, phenod[,2])
+  samind <- samind[which(.gdsHasSamp(gds, phenod[samind,2])==TRUE)]
+  samind <- samind[order(match(as.character(phenod[samind,2]),as.character(.gdsGetSamp(gds))))]
+  
+  if(verbose==TRUE)
+  {message(paste0('There are ', length(samind), ' subjects who have genotype data and have no missing phenotype or covariates.'))}
+  
+  outcome = as.matrix(phenod[samind,c(3,4)])
+  samid = as.character(phenod[samind,2])
+  
+  if(is.null(cov)==FALSE)
+  {cov = as.matrix(cov[samind,3:ncol(cov)])}
+  corr = corr[samind,samind]
   
   min_d <- min(outcome[which(outcome[,2]==1),1])
   rem <- which((outcome[,2]==0)&(outcome[,1]<min_d))
   if(length(rem)>0)
   {
+    samid = samid[-rem]
     outcome <- outcome[-rem,,drop = FALSE]
-    X <- as.matrix(X[-rem,,drop = FALSE])
     corr <- corr[-rem,-rem,drop = FALSE]
     if(is.null(cov)==FALSE)
     {cov <- as.matrix(cov[-rem,,drop = FALSE])}
@@ -134,7 +161,6 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
   if(min(outcome[,2] %in% c(0,1))<1)
   {stop("The status should be either 0 (censored) or 1 (failure).")}
   
-  p <- ncol(X)
   u <- rep(0,n)
   if(is.null(cov)==FALSE)
   {
@@ -156,7 +182,6 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
       }
       beta <- rep(0,k)
     }
-    
   }else{
     k <- 0
     beta <- numeric(0)
@@ -174,7 +199,7 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
   rs <- rs_sum(rk-1,d_v[ind[,1]])
   if(spd==FALSE)
   {
-    rk_cor = matrix.rank(as.matrix(corr),method='chol')
+    rk_cor = matrixcalc::matrix.rank(as.matrix(corr),method='chol')
     spsd = FALSE
     if(rk_cor<n)
     {spsd = TRUE}
@@ -187,7 +212,9 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
     {message(paste0('There is/are ',k,' covariates. The sample size included is ',n,'.'))}
   }
   
-  nz <- nnzero(corr)
+  nz <- Matrix::nnzero(corr)
+  #if(nz>(n*n/2))
+  #{type <- 'dense'}
   if( nz > ((as.double(n)^2)/2) )
   {type <- 'dense'}
   
@@ -339,17 +366,18 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
     rad = matrix(rad,n,mc)/sqrt(n)
   }
   
+  iter = NULL
+  
   if(is.null(tau))
   {
-    tau_e = 0.5
+    tau_e = 0.5 
     new_t = switch(
       opt,
-      'bobyqa' = bobyqa(tau_e, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=cov, d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,lower=min_tau,upper=max_tau,eigen=eigen,solver=solver,rad=rad),
+      'bobyqa' = nloptr::bobyqa(tau_e, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=cov, d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,lower=min_tau,upper=max_tau,eigen=eigen,solver=solver,rad=rad),
       'Brent' = optim(tau_e, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=cov, d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,lower=min_tau,upper=max_tau,method='Brent',eigen=eigen,solver=solver,rad=rad),
       'NM' = optim(tau_e, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=cov, d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,method='Nelder-Mead',eigen=eigen,solver=solver,rad=rad),
       stop("The argument opt should be bobyqa, Brent or NM.")
     )
-    
     if(opt=='bobyqa')
     {iter <- new_t$iter}else{
       iter <- new_t$counts
@@ -358,101 +386,139 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
     tau_e <- new_t$par
     if(tau_e==min_tau)
     {warning(paste0("The estimated variance component equals the lower bound (", min_tau, "), probably suggesting no random effects."))}
-    
   }else{
     if(tau < 0)
     {stop("The variance component must be positive.")}
     tau_e = tau
   }
   
-  snpval = which(apply(X,2,sd)>0)
   if(verbose==TRUE)
   {message(paste0('The variance component is estimated. Start analyzing SNPs...'))}
   
+  # snp_info <- SNPRelate::snpgdsSNPRateFreq(genofile,with.id=TRUE)
+  #snp_ind = SNPRelate::snpgdsSelectSNP(genofile,sample.id=samid,maf=maf,missing.rate=0,remove.monosnp=TRUE)
+  snp_ind <- .gdsSelectSNP(gds, sample.id=samid, snp.id=snp.id, maf=maf, missing.rate=0, verbose=verbose)
+  
+  nsnp = length(snp_ind)
+  blocks = max(100,ceiling(5e6/n))
+  nblock = ceiling(nsnp/blocks)
+  remain = nsnp%%blocks
+  sp = blocks*((1:nblock)-1) + 1
+  ep = blocks*(1:nblock)
+  if(remain>0)
+  {
+    ep[length(ep)] = nsnp
+  }
+  
+  # genofile <- SNPRelate::snpgdsOpen(gds.fn,allow.duplicate=TRUE)
+  
   if(score==FALSE)
   {
-    c_ind <- c()
-    if(k>0)
-    {
-      X <- cbind(X,cov)
-      c_ind <- (p+1):(p+k)
-    }
-
+    sumstats <- data.frame(index=snp_ind,beta=rep(NA,nsnp),HR=rep(NA,nsnp),sd_beta=rep(NA,nsnp),p=rep(NA,nsnp))
     beta <- rep(1e-16,k+1)
     u <- rep(0,n)
-    sumstats <- data.frame(beta=rep(NA,p),HR=rep(NA,p),sd_beta=rep(NA,p),p=rep(NA,p))
     
-    if(type=='dense')
-    {
-      cme_re <- sapply(snpval, function(i)
+    for(bi in 1:nblock)
+    {  
+      snp_t = sp[bi]:ep[bi]
+      #X = SNPRelate::snpgdsGetGeno(genofile, sample.id=samid,snp.id=snp_ind[snp_t],with.id=TRUE,verbose=FALSE)
+      X = .gdsGetGeno(gds, sample.id=samid, snp.id=snp_ind[snp_t], verbose=FALSE)
+      #X = X$genotype
+      
+      p <- ncol(X)
+      c_ind <- c()
+      if(k>0)
       {
-        tryCatch({
-        res <- irls_ex(beta, u, tau_e, si_d, sigma_i_s, as.matrix(X[,c(i,c_ind)]), eps, d_v, ind, rs$rs_rs, rs$rs_cs,rs$rs_cs_p,det=FALSE,detap=detap,solver=solver)
-        c(res$beta[1],res$v11[1,1])},
-        warning = function(war){
-          message(paste0('The estimation may not converge for predictor ',i))
-          c(NA,NA)
-          },
-        error = function(err){
-          message(paste0('The estimation failed for predictor ',i))
-          c(NA,NA)
-          }
-        )
-      })
-    }else{
-      if(is.null(order))
+        X <- cbind(X,cov)
+        c_ind <- (p+1):(p+k)
+      }
+      
+      if(type=='dense')
       {
-        x_test = sample(c(rep(1,floor(nrow(X)/2)),rep(0,ceiling(nrow(X)/2))),replace = FALSE)
-        est_t = microbenchmark(irls_fast_ap(0, u, tau_e, si_d, sigma_i_s, as.matrix(x_test), eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,1,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver),times=2)
-        est_t = mean(est_t$time)
-        for(ord_o in 2:10)
+        cme_re <- sapply(1:p, function(i)
         {
-          est_c = microbenchmark(irls_fast_ap(0, u, tau_e, si_d, sigma_i_s, as.matrix(x_test), eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,ord_o,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver),times=2)
-          est_c = mean(est_c$time)
-          if(est_c<(0.9*est_t))
+          tryCatch({
+          res <- irls_ex(beta, u, tau_e, si_d, sigma_i_s, as.matrix(X[,c(i,c_ind)]), eps, d_v, ind, rs$rs_rs, rs$rs_cs,rs$rs_cs_p,det=FALSE,detap=detap,solver=solver)
+          c(res$beta[1],res$v11[1,1])},
+          warning = function(war){
+            message(paste0('The estimation may not converge for SNP ',i, ' in block ',bi))
+            c(NA,NA)
+            },
+          error = function(err){
+            message(paste0('The estimation failed for SNP ',i, ' in block ',bi))
+            c(NA,NA)
+            }
+          )
+        })
+      }else{
+        if(is.null(order))
+        {
+          x_test = matrix(sample(c(rep(1,floor(nrow(X)/2)),rep(0,ceiling(nrow(X)/2))),replace = FALSE),n,1)
+          est_t = microbenchmark::microbenchmark(irls_fast_ap(0, u, tau_e, si_d, sigma_i_s, x_test, eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,1,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver),times=2)
+          est_t = mean(est_t$time)
+          for(ord_o in 2:10)
           {
-            est_t = est_c
-            order_t = ord_o
-          }else{
-            break
+            est_c = microbenchmark::microbenchmark(irls_fast_ap(0, u, tau_e, si_d, sigma_i_s, x_test, eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,ord_o,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver),times=2)
+            est_c = mean(est_c$time)
+            if(est_c<(0.9*est_t))
+            {
+              est_t = est_c
+              order_t = ord_o
+            }else{
+              break
+            }
           }
         }
+        if(verbose==TRUE)
+        {message(paste0('The order is set to be ', order_t,'.'))}
+        
+        cme_re <- sapply(1:p, function(i)
+        {
+          tryCatch({
+          res <- irls_fast_ap(beta, u, tau_e, si_d, sigma_i_s, as.matrix(X[,c(i,c_ind)]), eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,order_t,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver)
+          c(res$beta[1],res$v11[1,1])},
+          warning = function(war){
+            message(paste0('The estimation may not converge for SNP ',i, ' in block ',bi))
+            c(NA,NA)
+            },
+          error = function(err){
+            message(paste0('The estimation failed for SNP ',i, ' in block ',bi))
+            c(NA,NA)
+            }
+          )
+        })
       }
-      if(verbose==TRUE)
-      {message(paste0('The order is set to be ', order_t,'.'))}
       
-      cme_re <- sapply(snpval, function(i)
-      {
-        tryCatch({
-        res <- irls_fast_ap(beta, u, tau_e, si_d, sigma_i_s, as.matrix(X[,c(i,c_ind)]), eps, d_v, ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,order_t,det=FALSE,detap=detap,sigma_s=corr,s_d=s_d,eigen=eigen,solver=solver)
-        c(res$beta[1],res$v11[1,1])
-        },
-        warning = function(war){
-          message(paste0('The estimation may not converge for predictor ',i))
-          c(NA,NA)
-         },
-        error = function(err){
-          message(paste0('The estimation failed for predictor ',i))
-          c(NA,NA)
-          }
-        )
-      })
+      sumstats$beta[snp_t] <- cme_re[1,]
+      sumstats$HR[snp_t] <- exp(cme_re[1,])
+      sumstats$sd_beta[snp_t] <- sqrt(cme_re[2,])
+      sumstats$p[snp_t] <- pchisq(sumstats$beta[snp_t]^2/cme_re[2,],1,lower.tail=FALSE)
     }
-    
-    sumstats$beta[snpval] <- cme_re[1,]
-    sumstats$HR[snpval] = exp(sumstats$beta[snpval])
-    sumstats$sd_beta[snpval] <- sqrt(cme_re[2,])
-    sumstats$p[snpval] <- pchisq(sumstats$beta[snpval]^2/cme_re[2,],1,lower.tail=FALSE)
     
     top = which(sumstats$p<threshold)
     if(length(top)>0)
     {
+      if(verbose==TRUE)
+      {message(paste0('Finish analyzing SNPs. Start analyzing top SNPs using a variant-specific variance component...'))}
+      
+      #X = SNPRelate::snpgdsGetGeno(genofile, sample.id=samid,snp.id=snp_ind[top],with.id=TRUE,verbose=FALSE)
+      X = .gdsGetGeno(gds, sample.id=samid, snp.id=snp_ind[top], verbose=FALSE)
+      #X = X$genotype
+      p <- ncol(X)
+      c_ind <- c()
+      if(k>0)
+      {
+        X <- cbind(X,cov)
+        c_ind <- (p+1):(p+k)
+      }
+      
       tau = tau_e
-      cme_re <- sapply(top, function(i)
+      
+      cme_re <- sapply(1:p, function(i)
       {
         if(opt=='bobyqa')
         {
-          new_t <- bobyqa(tau, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=as.matrix(X[,c(i,c_ind)]), d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,lower=min_tau,upper=max_tau,eigen=eigen,solver=solver,rad=rad)
+          new_t <- nloptr::bobyqa(tau, mll, type=type, beta=beta,u=u,si_d=si_d,sigma_i_s=sigma_i_s,X=as.matrix(X[,c(i,c_ind)]), d_v=d_v, ind=ind, rs_rs=rs$rs_rs, rs_cs=rs$rs_cs,rs_cs_p=rs$rs_cs_p,rk_cor=rk_cor,order=order_t,det=TRUE,detap=detap,inv=inv,sigma_s=corr,s_d=s_d,eps=eps,lower=min_tau,upper=max_tau,eigen=eigen,solver=solver,rad=rad)
         }else{
           if(opt=='Brent')
           {
@@ -470,6 +536,7 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
         }
         c(tau_s,res$beta[1],res$v11[1,1])
       })
+      
       sumstats$tau = sumstats$beta_exact = sumstats$sd_beta_exact = sumstats$p_exact = NA
       sumstats$tau[top] = cme_re[1,]
       sumstats$beta_exact[top] = cme_re[2,]
@@ -523,14 +590,33 @@ coxmeg_m <- function(X,outcome,corr,type,FID=NULL,cov=NULL,tau=NULL,min_tau=1e-0
     v[brc,brc] = v[brc,brc] + as.matrix(sigma_i_s/tau_e)
     v = chol(v)
     v = chol2inv(v)
-    t_st <- score_test(deriv,bw_v,w_v,rs$rs_rs-1,rs$rs_cs-1,rs$rs_cs_p-1,ind-1,a_v_p,a_v_2,tau_e,v,cov,as.matrix(X[,snpval]))
-    pv <- pchisq(t_st[,2],1,lower.tail=FALSE)
     
-    sumstats <- data.frame(score=rep(NA,p),score_test=rep(NA,p),p=rep(NA,p))
-    sumstats$score[snpval]=t_st[,1]
-    sumstats$score_test[snpval]=t_st[,2]
-    sumstats$p[snpval]=pv
+    sumstats <- data.frame(index=snp_ind,score=rep(NA,nsnp),score_test=rep(NA,nsnp),p=rep(NA,nsnp))
+    
+    for(bi in 1:nblock)
+    {  
+      snp_t = sp[bi]:ep[bi]
+      #X = SNPRelate::snpgdsGetGeno(genofile, sample.id=samid,snp.id=snp_ind[snp_t],with.id=TRUE,verbose=FALSE)
+      X = .gdsGetGeno(gds, sample.id=samid, snp.id=snp_ind[snp_t], verbose=FALSE)
+      #X = X$genotype
+      
+      t_st <- score_test(deriv,bw_v,w_v,rs$rs_rs-1,rs$rs_cs-1,rs$rs_cs_p-1,ind-1,a_v_p,a_v_2,tau_e,v,cov,X)
+      pv <- pchisq(t_st[,2],1,lower.tail=FALSE)
+      sumstats$score[snp_t]=t_st[,1]
+      sumstats$score_test[snp_t]=t_st[,2]
+      sumstats$p[snp_t]=pv
+    }
   }
+  
+  #snplist = SNPRelate::snpgdsSNPList(genofile)
+  snplist = .gdsSNPList(gds)
+  #af_inc = SNPRelate::snpgdsSNPList(genofile, sample.id=samid)
+  af_inc = .gdsSNPList(gds, sample.id=samid)
+  snplist = cbind(snplist,af_inc[,'afreq'])
+  colnames(snplist)[ncol(snplist)] = 'afreq_inc'
+  snplist = snplist[match(snp_ind,snplist[,1]),]
+  sumstats = cbind(snplist,sumstats)
+
   res = list(summary=sumstats,tau=tau_e,rank=rk_cor,nsam=n)
   return(res)
 }

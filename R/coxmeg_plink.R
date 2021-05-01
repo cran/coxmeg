@@ -26,7 +26,7 @@
 #' @param tmp_dir A optional directory to store temporary .gds files. The directory needs to be specified when \code{bed} is provided. 
 #' @param tau An optional positive value for the variance component. If tau is given, the function will skip estimating the variance component, and use the given tau to analyze the SNPs.
 #' @param cov_file An optional string value indicating the file name or the full path of a covariate file. The files must be in the working directory if the full path is not given. Same as the cov file in plink, the first two columns are family ID and individual ID. The covariates are included in the null model for estimating the variance component. The covariates can be quantitative or binary values. Categorical variables need to be converted to dummy variables.
-#' @param eps An optional positive value indicating the tolerance in the optimization algorithm. Default is 1e-6.
+#' @param eps An optional positive value indicating the relative convergence tolerance in the optimization algorithm. Default is 1e-6. A smaller value (e.g., 1e-8) can be used for better precision of the p-values in the situation where most SNPs under investigation have a very low minor allele count (<5).
 #' @param min_tau An optional positive value indicating the lower bound in the optimization algorithm for the variance component tau. Default is 1e-4.
 #' @param max_tau An optional positive value indicating the upper bound in the optimization algorithm for the variance component tau. Default is 5.
 #' @param opt An optional string value for the Optimization algorithm for tau. Can have the following values: 'bobyqa', 'Brent' or 'NM'. Default is 'bobyqa'.
@@ -600,7 +600,7 @@ coxmeg_plink <- function(pheno,corr,type,bed=NULL,tmp_dir=NULL,cov_file=NULL,tau
     v = chol(v)
     v = chol2inv(v)
     
-    sumstats <- data.frame(index=snp_ind,score_test=rep(NA,nsnp),p=rep(NA,nsnp))
+    sumstats <- data.frame(index=snp_ind,score=rep(NA,nsnp),score_test=rep(NA,nsnp),p=rep(NA,nsnp))
     
     for(bi in 1:nblock)
     {  
@@ -609,8 +609,9 @@ coxmeg_plink <- function(pheno,corr,type,bed=NULL,tmp_dir=NULL,cov_file=NULL,tau
       X = X$genotype
       
       t_st <- score_test(deriv,bw_v,w_v,rs$rs_rs-1,rs$rs_cs-1,rs$rs_cs_p-1,ind-1,a_v_p,a_v_2,tau_e,v,cov,X)
-      pv <- pchisq(t_st,1,lower.tail=FALSE)
-      sumstats$score_test[snp_t]=t_st
+      pv <- pchisq(t_st[,2],1,lower.tail=FALSE)
+      sumstats$score[snp_t]=t_st[,1]
+      sumstats$score_test[snp_t]=t_st[,2]
       sumstats$p[snp_t]=pv
     }
   }
