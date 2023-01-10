@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2022-12-24" />
+<meta name="date" content="2023-01-09" />
 
 <title>Cox Mixed-Effects Models for Genome-Wide Association Studies</title>
 
@@ -381,7 +381,7 @@ pre code {
 <h1 class="title toc-ignore">Cox Mixed-Effects Models for Genome-Wide
 Association Studies</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2022-12-24</h4>
+<h4 class="date">2023-01-09</h4>
 
 </div>
 
@@ -489,13 +489,13 @@ cen &lt;- rexp(n, rate = 0.02 )
 ycen &lt;- pmin(y, cen)
 outcome &lt;- cbind(ycen,as.numeric(y &lt;= cen))
 head(outcome)</code></pre>
-<pre><code>##            ycen  
-## [1,] 0.16157376 1
-## [2,] 1.51429250 1
-## [3,] 0.11922641 1
-## [4,] 1.09722325 1
-## [5,] 1.32076652 1
-## [6,] 0.02461743 1</code></pre>
+<pre><code>##           ycen  
+## [1,] 7.9214270 1
+## [2,] 8.8011935 1
+## [3,] 3.7073713 1
+## [4,] 0.7997463 1
+## [5,] 2.6332883 1
+## [6,] 1.1961961 1</code></pre>
 <p>We fit a Cox mixed-effects model using the function
 <code>coxmeg</code>.</p>
 <pre class="r"><code>re = coxmeg(outcome,sigma,type=&#39;bd&#39;,X=pred,order=1,detap=&#39;diagonal&#39;)</code></pre>
@@ -521,22 +521,22 @@ columns in <code>X</code> should be linearly independent; otherwise the
 function will stop with an error indicating sigularity.</p>
 <pre class="r"><code>re</code></pre>
 <pre><code>## $beta
-## [1] 0.09632882
+## [1] 0.01578414
 ## 
 ## $HR
-## [1] 1.101121
+## [1] 1.015909
 ## 
 ## $sd_beta
-## [1] 0.03758716
+## [1] 0.03728268
 ## 
 ## $p
-## [1] 0.01038283
+## [1] 0.6720299
 ## 
 ## $tau
-## [1] 0.2100396
+## [1] 0.129721
 ## 
 ## $iter
-## [1] 18
+## [1] 16
 ## 
 ## $rank
 ## [1] 1000
@@ -545,7 +545,7 @@ function will stop with an error indicating sigularity.</p>
 ## [1] 1000
 ## 
 ## $int_ll
-## [1] 11584.12</code></pre>
+## [1] 11464.25</code></pre>
 <p>In the above result, <code>tau</code> is the estimated variance
 component, and <code>int_ll</code> is -2*log(lik) of the
 integrated/marginal likelihood for estimating <code>tau</code>.</p>
@@ -581,23 +581,23 @@ re_coxme = coxme(Surv(outcome[,1],outcome[,2])~as.matrix(pred)+(1|as.character(1
 re_coxme</code></pre>
 <pre><code>## Cox mixed-effects model fit by maximum likelihood
 ## 
-##   events, n = 951, 1000
-##   Iterations= 16 70 
-##                     NULL Integrated    Fitted
-## Log-likelihood -5633.259  -5624.561 -5474.075
+##   events, n = 942, 1000
+##   Iterations= 7 33 
+##                   NULL Integrated    Fitted
+## Log-likelihood -5567.2  -5564.649 -5463.805
 ## 
-##                    Chisq     df          p   AIC     BIC
-## Integrated loglik  17.39   2.00 1.6705e-04 13.39    3.68
-##  Penalized loglik 318.37 137.63 2.2204e-16 43.10 -625.45
+##                    Chisq    df          p  AIC     BIC
+## Integrated loglik   5.10  2.00 7.7993e-02  1.1   -8.59
+##  Penalized loglik 206.79 95.15 2.9785e-10 16.5 -444.77
 ## 
 ## Model:  Surv(outcome[, 1], outcome[, 2]) ~ as.matrix(pred) + (1 | as.character(1:n)) 
 ## Fixed coefficients
-##                       coef exp(coef)  se(coef)    z    p
-## as.matrix(pred) 0.09642976  1.101232 0.0376348 2.56 0.01
+##                       coef exp(coef)   se(coef)    z    p
+## as.matrix(pred) 0.01575596  1.015881 0.03733603 0.42 0.67
 ## 
 ## Random effects
 ##  Group             Variable Std Dev   Variance 
-##  as.character.1.n. Vmat.1   0.4602650 0.2118439</code></pre>
+##  as.character.1.n. Vmat.1   0.3630484 0.1318041</code></pre>
 <p>In GWAS, we may split the procedure into two separate steps, (1)
 estimate the variance component under the null model, and (2) estimate
 the coefficients for the predictors using the estimated variance
@@ -611,7 +611,7 @@ component. This can be carried out in the following way.</p>
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <pre class="r"><code>tau = re$tau
 print(tau)</code></pre>
-<pre><code>## [1] 0.2048986</code></pre>
+<pre><code>## [1] 0.1310805</code></pre>
 <pre class="r"><code>re2 = fit_ppl(pred,outcome,sigma,type=&#39;bd&#39;,tau=tau,order=1)</code></pre>
 <pre><code>## Remove 0 subjects censored before the first failure.</code></pre>
 <pre><code>## There is/are 1 covariates. The sample size included is 1000.</code></pre>
@@ -620,23 +620,23 @@ print(tau)</code></pre>
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <pre class="r"><code>re2</code></pre>
 <pre><code>## $beta
-## [1] 0.09604742
+## [1] 0.01576581
 ## 
 ## $HR
-## [1] 1.100811
+## [1] 1.015891
 ## 
 ## $sd_beta
-## [1] 0.03749871
+## [1] 0.03730794
 ## 
 ## $p
-## [1] 0.01042654
+## [1] 0.6725974
 ## 
 ## $iter
-## [1] 4
+## [1] 3
 ## 
 ## $ppl
-##          [,1]
-## [1,] -5545.39</code></pre>
+##           [,1]
+## [1,] -5511.472</code></pre>
 </div>
 <div id="perform-gwas-of-an-age-at-onset-phenotype-with-a-sparse-relatedness-matrix" class="section level2">
 <h2>Perform GWAS of an age-at-onset phenotype with a sparse relatedness
@@ -761,17 +761,17 @@ pheno_m = read.table(pheno)
 re = coxmeg_m(geno,pheno_m[,3:4],sigma,type=&#39;bd&#39;,verbose=FALSE)
 re</code></pre>
 <pre><code>## $summary
-##            beta        HR    sd_beta         p
-## 1   0.014073514 1.0141730 0.02965801 0.6351244
-## 2   0.013972763 1.0140708 0.02921262 0.6324278
-## 3  -0.018272268 0.9818937 0.03014594 0.5444305
-## 4   0.003473231 1.0034793 0.02986623 0.9074204
-## 5   0.035479470 1.0361164 0.02970976 0.2323988
-## 6   0.036764737 1.0374489 0.02947146 0.2122255
-## 7   0.008838454 1.0088776 0.02936252 0.7634058
-## 8  -0.013767881 0.9863265 0.02979601 0.6440302
-## 9   0.010918400 1.0109782 0.02986768 0.7146941
-## 10  0.040944325 1.0417941 0.02916419 0.1603413
+##             beta        HR    sd_beta          p
+## 1  -7.162556e-02 0.9308794 0.02971361 0.01592934
+## 2   3.820619e-02 1.0389454 0.02922678 0.19113392
+## 3  -2.665527e-02 0.9736968 0.02913173 0.36019622
+## 4   1.713290e-03 1.0017148 0.03010347 0.95461419
+## 5  -2.751034e-02 0.9728646 0.02927592 0.34737561
+## 6   6.456459e-02 1.0666945 0.02991639 0.03091479
+## 7   4.663375e-02 1.0477382 0.02996661 0.11966280
+## 8  -2.806450e-02 0.9723256 0.02968295 0.34441619
+## 9  -4.940843e-05 0.9999506 0.02874174 0.99862840
+## 10  1.866739e-02 1.0188427 0.02980990 0.53117432
 ## 
 ## $tau
 ## [1] 0.04052206
@@ -951,22 +951,22 @@ re = coxmeg(outcome,sigmas,type=&#39;bd&#39;,X=pred,order=1,detap=&#39;diagonal&
 <pre><code>## Solver: Cholesky decomposition (RcppEigen=TRUE).</code></pre>
 <pre class="r"><code>re</code></pre>
 <pre><code>## $beta
-## [1] 0.09821634
+## [1] 0.01677506
 ## 
 ## $HR
-## [1] 1.103201
+## [1] 1.016917
 ## 
 ## $sd_beta
-## [1] 0.03793354
+## [1] 0.03769936
 ## 
 ## $p
-## [1] 0.0096208
+## [1] 0.656342
 ## 
 ## $tau
-## [1] 0.20175113 0.02623565
+## [1] 0.11577816 0.03282019
 ## 
 ## $iter
-## [1] 32
+## [1] 34
 ## 
 ## $rank
 ## [1] 1000
@@ -975,7 +975,7 @@ re = coxmeg(outcome,sigmas,type=&#39;bd&#39;,X=pred,order=1,detap=&#39;diagonal&
 ## [1] 1000
 ## 
 ## $int_ll
-## [1] 11249.19</code></pre>
+## [1] 11129.22</code></pre>
 <p>The sum of these correlation matrices determines which value should
 be specified for <code>type</code>. As shown in the above example,
 because the sum of the matrices is still block diagonal,

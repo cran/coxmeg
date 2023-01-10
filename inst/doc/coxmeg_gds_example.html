@@ -12,7 +12,7 @@
 
 <meta name="author" content="Stephanie Gogarten" />
 
-<meta name="date" content="2022-12-24" />
+<meta name="date" content="2023-01-09" />
 
 <title>Using GDS files with coxmeg</title>
 
@@ -341,7 +341,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Using GDS files with coxmeg</h1>
 <h4 class="author">Stephanie Gogarten</h4>
-<h4 class="date">2022-12-24</h4>
+<h4 class="date">2023-01-09</h4>
 
 
 
@@ -477,9 +477,9 @@ The threshold chosen corresponds to setting values for pairs less
 closely related than second-degree relatives to 0. We multiply the
 matrix by 2 so diagonal elements are 1 rather than 0.5 (the latter is
 the kinship coefficient for identical genomes).</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GENESIS)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">requireNamespace</span>(<span class="st">&#39;GENESIS&#39;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>{</span>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">requireNamespace</span>(<span class="st">&#39;GENESIS&#39;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(GENESIS)</span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  king <span class="ot">&lt;-</span> <span class="fu">snpgdsIBDKING</span>(seq, <span class="at">verbose=</span><span class="cn">FALSE</span>)</span>
 <span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  sigma <span class="ot">&lt;-</span> GENESIS<span class="sc">::</span><span class="fu">kingToMatrix</span>(king, <span class="at">thresh=</span><span class="fl">0.177</span>) <span class="sc">*</span> <span class="dv">2</span></span>
 <span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  sigma[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>

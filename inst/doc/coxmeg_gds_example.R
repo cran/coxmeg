@@ -46,9 +46,10 @@ seqfile <- seqExampleFileName()
 seq <- seqOpen(seqfile)
 
 ## -----------------------------------------------------------------------------
-library(GENESIS)
+
 if(requireNamespace('GENESIS', quietly = TRUE))
 {
+  library(GENESIS)
   king <- snpgdsIBDKING(seq, verbose=FALSE)
   sigma <- GENESIS::kingToMatrix(king, thresh=0.177) * 2
   sigma[1:5,1:5]
