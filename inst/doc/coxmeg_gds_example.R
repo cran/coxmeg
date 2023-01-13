@@ -46,7 +46,6 @@ seqfile <- seqExampleFileName()
 seq <- seqOpen(seqfile)
 
 ## -----------------------------------------------------------------------------
-
 if(requireNamespace('GENESIS', quietly = TRUE))
 {
   library(GENESIS)
@@ -69,9 +68,12 @@ pheno <- data.frame(family.id, sample.id, time, status,
 head(pheno)
 
 ## -----------------------------------------------------------------------------
-seqSetFilter(seq, variant.sel=1:100)
-re <- coxmeg_gds(seq, pheno, sigma, type='bd')
-head(re$summary)
+if(requireNamespace('GENESIS', quietly = TRUE))
+{
+  seqSetFilter(seq, variant.sel=1:100)
+  re <- coxmeg_gds(seq, pheno, sigma, type='bd')
+  head(re$summary)
+}
 
 ## -----------------------------------------------------------------------------
 seqClose(seq)

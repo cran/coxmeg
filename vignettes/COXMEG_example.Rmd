@@ -22,7 +22,7 @@ vignette: >
 # write.bibtex(file="references.bib")
 ```
 
-# coxmeg 1.1.1
+# coxmeg 1.1.4
 
 ## Overview
 

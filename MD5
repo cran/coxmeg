@@ -1,4 +1,4 @@
-150910f8ef93743a688d3cea142d1eef *DESCRIPTION
+e0548b5a4e0e8eeab98c0c7f8181d097 *DESCRIPTION
 da1ae548158f73aac1a178d59f013362 *NAMESPACE
 21e8b76b4104bf2dc5c0aea1a108854b *R/RcppExports.R
 b2fc5e48c59039db671b76bf65d97435 *R/coxmeg.R
@@ -10,14 +10,14 @@ f9c86d31e233a39a85143f97fb3545c3 *R/gds_utils.R
 a6c6ddf54f2ad4c1d1c6d3fc465f393c *R/irls_ex.R
 e974f32a4cbee33e4d5b10f28662f2c2 *R/irls_fast_ap.R
 e6fc287f92b31c14934452316f83606d *R/mll.R
-ec74a9db764db1fa983a635f98d9aa44 *build/partial.rdb
+79e77f2ad57478b76ae325e7f3cadb37 *build/partial.rdb
 4ca02e44691d11bc29390dc5fc005086 *build/vignette.rds
 7d76fe4975d2f332cbcd5c15fb1406a1 *inst/doc/COXMEG_example.R
-6f3af4c3aa7c32c9aaa02b5cf0049bbf *inst/doc/COXMEG_example.Rmd
-7264639f2069389ba6ad1558635df30a *inst/doc/COXMEG_example.html
-6d9f6bf97af6f0d32be89bb676941f04 *inst/doc/coxmeg_gds_example.R
-e1d9b8b1d97c85069fd90b5c4f94ba6a *inst/doc/coxmeg_gds_example.Rmd
-b9018b215e8e5dbdfd30c708a4617707 *inst/doc/coxmeg_gds_example.html
+22753ebde5dcfb2ec6a9d68c5df3af65 *inst/doc/COXMEG_example.Rmd
+09077257ea32ecedbba206094cca1c8e *inst/doc/COXMEG_example.html
+ee08a5bcb48b60d94a91932cea73629c *inst/doc/coxmeg_gds_example.R
+7cd6a6919e683fad435311da6660e6fb *inst/doc/coxmeg_gds_example.Rmd
+483c59adceb17fe68004b8a68908269a *inst/doc/coxmeg_gds_example.html
 7675a54cdeafa8ed7ca369bc36b9d119 *inst/extdata/ex_cov.txt
 1e0f5d7f2459a01425e9464eb483d0c2 *inst/extdata/ex_pheno.txt
 cc4554d4c9546b1b10087439beb950d4 *inst/extdata/example_null.bed
@@ -40,6 +40,6 @@ d077b15d5d1283338f2c07fc40d1005a *src/pcg_dense.cpp
 19b002302eb8cf90b3c4017a6ecf0f2e *src/score.cpp
 094b0e7ba47bd91e61bd86b8f1561a43 *tests/testthat.R
 ecb210365645ce36d568ea8aa3c030dd *tests/testthat/test_coxmeg_gds.R
-6f3af4c3aa7c32c9aaa02b5cf0049bbf *vignettes/COXMEG_example.Rmd
-e1d9b8b1d97c85069fd90b5c4f94ba6a *vignettes/coxmeg_gds_example.Rmd
+22753ebde5dcfb2ec6a9d68c5df3af65 *vignettes/COXMEG_example.Rmd
+7cd6a6919e683fad435311da6660e6fb *vignettes/coxmeg_gds_example.Rmd
 fd5358614fbcd25326fd07e430ab8f88 *vignettes/references.bib
